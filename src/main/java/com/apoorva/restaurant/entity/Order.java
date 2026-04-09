@@ -35,6 +35,11 @@ public class Order {
     private List<OrderItem> orderItems = new ArrayList<>();
 
     public enum OrderStatus {
-        PENDING, CONFIRMED, PREPARING, READY, COMPLETED, CANCELLED
+        PENDING,
+        CONFIRMED,
+        PREPARING,
+        READY,
+        COMPLETED,
+        CANCELLED
     }
 }

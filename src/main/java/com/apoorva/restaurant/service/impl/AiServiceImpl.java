@@ -5,6 +5,7 @@ import com.apoorva.restaurant.repository.MenuItemRepository;
 import com.apoorva.restaurant.service.AiService;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -20,40 +21,88 @@ public class AiServiceImpl implements AiService {
 
     @Override
     public String getMenuRecommendation(String customerQuery) {
-        List<MenuItem> menuItems = menuItemRepository.findAll();
+        List<MenuItem> allItems = menuItemRepository.findAll();
 
-        if (menuItems == null || menuItems.isEmpty()) {
-            return "Sorry, no menu items are available right now.";
+        if (allItems.isEmpty()) {
+            return "Sorry, no menu items available at the moment.";
         }
 
-        String query = customerQuery == null ? "" : customerQuery.trim().toLowerCase(Locale.ROOT);
+        String query = customerQuery.toLowerCase(Locale.ROOT);
 
-        List<MenuItem> matchedItems;
+        // Separate Veg and Non-Veg based on Category + Name
+        List<MenuItem> vegItems = new ArrayList<>();
+        List<MenuItem> nonVegItems = new ArrayList<>();
 
-        if (query.isBlank()) {
-            matchedItems = menuItems.stream().limit(3).collect(Collectors.toList());
+        for (MenuItem item : allItems) {
+            String itemName = item.getName().toLowerCase(Locale.ROOT);
+            String category = (item.getCategory() != null) ? item.getCategory().toLowerCase(Locale.ROOT) : "";
+
+            boolean isNonVeg = 
+                category.contains("non-veg") || 
+                category.contains("nonveg") || 
+                category.contains("non veg") ||
+                itemName.contains("chicken") || 
+                itemName.contains("mutton") || 
+                itemName.contains("fish") || 
+                itemName.contains("egg") || 
+                itemName.contains("prawn");
+
+            boolean isVeg = 
+                category.contains("veg") || 
+                category.contains("vegetarian") ||
+                itemName.contains("paneer") || 
+                itemName.contains("veg") || 
+                itemName.contains("margherita") ||
+                itemName.contains("dal");
+
+            if (isNonVeg) {
+                nonVegItems.add(item);
+            } else if (isVeg) {
+                vegItems.add(item);
+            } else {
+                // If unclear, put in veg by default (safe assumption)
+                vegItems.add(item);
+            }
+        }
+
+        if (customerQuery == null || customerQuery.trim().isEmpty()) {
+            return "Please provide a valid query.";
+        }
+        
+        // Smart Recommendation based on user query
+        if (query.contains("non veg") || query.contains("nonveg") || query.contains("Non-Veg") ||
+            query.contains("chicken") || query.contains("mutton") || 
+            query.contains("fish")) {
+            
+            return "🍗 **Non-Veg Recommendations**:\n" + formatItems(nonVegItems);
+
+        } else if (query.contains("veg") || query.contains("vegetarian") || 
+                   query.contains("paneer") || query.contains("dal")) {
+            
+            return "🥗 **Veg Recommendations**:\n" + formatItems(vegItems);
+
         } else {
-            matchedItems = menuItems.stream()
-                    .filter(item ->
-                            contains(item.getItemName(), query) ||
-                            contains(item.getDescription(), query) ||
-                            contains(item.getCategory(), query))
-                    .limit(5)
-                    .collect(Collectors.toList());
+            // Default: Show both
+            return "🥗 **Veg Options**:\n" + formatItems(vegItems) +
+                   "\n\n🍗 **Non-Veg Options**:\n" + formatItems(nonVegItems);
         }
-
-        if (matchedItems.isEmpty()) {
-            matchedItems = menuItems.stream().limit(3).collect(Collectors.toList());
-        }
-
-        String recommendations = matchedItems.stream()
-                .map(item -> item.getItemName() + " - ₹" + item.getPrice())
-                .collect(Collectors.joining(", "));
-
-        return "Based on your request, I recommend: " + recommendations;
     }
 
-    private boolean contains(String field, String query) {
-        return field != null && field.toLowerCase(Locale.ROOT).contains(query);
+    private String formatItems(List<MenuItem> items) {
+        if (items.isEmpty()) {
+            return "No items found in this category.";
+        }
+
+        return items.stream()
+                .limit(5)  // Show maximum 5 recommendations
+                .map(item -> "• " + item.getName() + " - ₹" + item.getPrice() +
+                            " (" + item.getCategory() + ")")
+                .collect(Collectors.joining("\n"));
     }
+
+	@Override
+	public String chat(String message) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

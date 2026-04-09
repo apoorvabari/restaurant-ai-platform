@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 @AllArgsConstructor
 public class OrderItemResponse {
-
     private Long menuItemId;
     private String itemName;
     private Integer quantity;

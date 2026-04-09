@@ -37,7 +37,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     public MenuItem updateMenuItem(Long id, MenuItem menuItemDetails) {
         return menuItemRepository.findById(id)
                 .map(menuItem -> {
-                    menuItem.setItemName(menuItemDetails.getItemName());
+                    menuItem.setName(menuItemDetails.getName());
                     menuItem.setCategory(menuItemDetails.getCategory());
                     menuItem.setPrice(menuItemDetails.getPrice());
 

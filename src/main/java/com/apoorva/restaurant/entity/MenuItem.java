@@ -1,42 +1,34 @@
 package com.apoorva.restaurant.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "menu_items")
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class MenuItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "item_name", nullable = false)
-    private String itemName;
-
     @Column(nullable = false)
-    private String category;
+    private String name;
+
+    @Column(length = 1000)
+    private String description;
 
     @Column(nullable = false)
     private Double price;
 
     @Column(nullable = false)
-    private Boolean available;
+    private String category;
 
-    @Column(length = 500)
-    private String description;
+    private Boolean available = true;
 
-    public MenuItem(Long id, String itemName, String category, Double price, Boolean available, String description) {
-        this.id = id;
-        this.itemName = itemName;
-        this.category = category;
-        this.price = price;
-        this.available = available;
-        this.description = description;
-    }
+    private String imageUrl;
 }

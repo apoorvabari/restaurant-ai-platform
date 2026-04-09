@@ -1,13 +1,15 @@
 package com.apoorva.restaurant.service.impl;
 
-import com.apoorva.restaurant.dto.*;
+import com.apoorva.restaurant.dto.OrderItemRequest;
+import com.apoorva.restaurant.dto.OrderItemResponse;
+import com.apoorva.restaurant.dto.OrderRequest;
+import com.apoorva.restaurant.dto.OrderResponse;
 import com.apoorva.restaurant.entity.MenuItem;
 import com.apoorva.restaurant.entity.Order;
 import com.apoorva.restaurant.entity.OrderItem;
 import com.apoorva.restaurant.repository.MenuItemRepository;
 import com.apoorva.restaurant.repository.OrderRepository;
 import com.apoorva.restaurant.service.OrderService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,16 +19,17 @@ import java.util.List;
 @Service
 public class OrderServiceImpl implements OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
+    private final MenuItemRepository menuItemRepository;
 
-    @Autowired
-    private MenuItemRepository menuItemRepository;
+    public OrderServiceImpl(OrderRepository orderRepository, MenuItemRepository menuItemRepository) {
+        this.orderRepository = orderRepository;
+        this.menuItemRepository = menuItemRepository;
+    }
 
     @Override
     @Transactional
     public OrderResponse placeOrder(Long userId, OrderRequest orderRequest) {
-
         Order order = new Order();
         order.setUserId(userId);
         order.setStatus(Order.OrderStatus.PENDING);
@@ -52,31 +55,15 @@ public class OrderServiceImpl implements OrderService {
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
-
-        // Convert to Response
-        List<OrderItemResponse> itemResponses = orderItems.stream()
-                .map(item -> new OrderItemResponse(
-                        item.getMenuItem().getId(),
-                        item.getMenuItem().getItemName(),
-                        item.getQuantity(),
-                        item.getPrice()))
-                .toList();
-
-        return new OrderResponse(
-                savedOrder.getId(),
-                savedOrder.getUserId(),
-                savedOrder.getTotalAmount(),
-                savedOrder.getStatus(),
-                savedOrder.getOrderTime(),
-                itemResponses
-        );
+        return convertToResponse(savedOrder);
     }
 
     @Override
     public List<OrderResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
-        // You can implement full conversion later
-        return orders.stream().map(this::convertToResponse).toList();
+        return orders.stream()
+                .map(this::convertToResponse)
+                .toList();
     }
 
     @Override
@@ -90,9 +77,10 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItemResponse> items = order.getOrderItems().stream()
                 .map(item -> new OrderItemResponse(
                         item.getMenuItem().getId(),
-                        item.getMenuItem().getItemName(),
+                        item.getMenuItem().getName(),
                         item.getQuantity(),
-                        item.getPrice()))
+                        item.getPrice()
+                ))
                 .toList();
 
         return new OrderResponse(
