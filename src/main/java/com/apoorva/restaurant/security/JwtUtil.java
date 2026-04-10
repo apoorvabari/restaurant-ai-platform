@@ -43,7 +43,7 @@ public class JwtUtil {
         return extractAllClaims(token).get("userId", Long.class);
     }
 
-    public boolean validateToken(String token, String string) {
+    public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
                     .setSigningKey(key)

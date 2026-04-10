@@ -5,7 +5,6 @@ import com.apoorva.restaurant.repository.MenuItemRepository;
 import com.apoorva.restaurant.service.AiService;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -24,85 +23,140 @@ public class AiServiceImpl implements AiService {
         List<MenuItem> allItems = menuItemRepository.findAll();
 
         if (allItems.isEmpty()) {
-            return "Sorry, no menu items available at the moment.";
+            return "Sorry, no menu items are available right now.";
         }
 
-        String query = customerQuery.toLowerCase(Locale.ROOT);
+        String query = (customerQuery == null ? "" : customerQuery)
+                .toLowerCase(Locale.ROOT).trim();
 
-        // Separate Veg and Non-Veg based on Category + Name
-        List<MenuItem> vegItems = new ArrayList<>();
-        List<MenuItem> nonVegItems = new ArrayList<>();
+        // Priority 1: Exact or strong name match
+        List<MenuItem> matchedItems = allItems.stream()
+                .filter(item -> strongNameMatch(item, query))
+                .collect(Collectors.toList());
 
-        for (MenuItem item : allItems) {
-            String itemName = item.getName().toLowerCase(Locale.ROOT);
-            String category = (item.getCategory() != null) ? item.getCategory().toLowerCase(Locale.ROOT) : "";
+        // Priority 2: Broader search if no strong match
+        if (matchedItems.isEmpty()) {
+            matchedItems = allItems.stream()
+                    .filter(item -> broadMatch(item, query))
+                    .collect(Collectors.toList());
+        }
 
-            boolean isNonVeg = 
-                category.contains("non-veg") || 
-                category.contains("nonveg") || 
-                category.contains("non veg") ||
-                itemName.contains("chicken") || 
-                itemName.contains("mutton") || 
-                itemName.contains("fish") || 
-                itemName.contains("egg") || 
-                itemName.contains("prawn");
+        boolean wantsNonVeg = isNonVegQuery(query);
+        boolean wantsVeg = isVegQuery(query);
 
-            boolean isVeg = 
-                category.contains("veg") || 
-                category.contains("vegetarian") ||
-                itemName.contains("paneer") || 
-                itemName.contains("veg") || 
-                itemName.contains("margherita") ||
-                itemName.contains("dal");
+        if (wantsNonVeg) {
+            List<MenuItem> result = matchedItems.stream()
+                    .filter(this::isNonVegItem)
+                    .collect(Collectors.toList());
+            if (result.isEmpty()) {
+                result = allItems.stream().filter(this::isNonVegItem).collect(Collectors.toList());
+            }
+            return formatResponse("🍗 NON-VEG RECOMMENDATIONS", result);
+        }
 
-            if (isNonVeg) {
-                nonVegItems.add(item);
-            } else if (isVeg) {
-                vegItems.add(item);
-            } else {
-                // If unclear, put in veg by default (safe assumption)
-                vegItems.add(item);
+        if (wantsVeg) {
+            List<MenuItem> result = matchedItems.stream()
+                    .filter(this::isVegItem)
+                    .collect(Collectors.toList());
+            if (result.isEmpty()) {
+                result = allItems.stream().filter(this::isVegItem).collect(Collectors.toList());
+            }
+            return formatResponse("🥬 VEG RECOMMENDATIONS", result);
+        }
+
+        // Specific item search (like "Lassi", "Paneer", "Biryani")
+        if (!matchedItems.isEmpty()) {
+            return formatResponse("🍽️ RECOMMENDED FOR '" + customerQuery + "'", matchedItems);
+        }
+
+        // Only as last resort
+        return formatBothResponses(allItems);
+    }
+
+    @Override
+    public String chat(String message) {
+        if (message == null || message.trim().isEmpty()) {
+            return "Please enter a message.";
+        }
+        return getMenuRecommendation(message);
+    }
+
+    // ====================== STRICT MATCHING ======================
+
+    private boolean strongNameMatch(MenuItem item, String query) {
+        String name = getLower(item.getItemName());
+        return name.contains(query) || query.contains(name);
+    }
+
+    private boolean broadMatch(MenuItem item, String query) {
+        if (query.isEmpty()) return true;
+
+        String name = getLower(item.getItemName());
+        String desc = getLower(item.getDescription());
+        String cat  = getLower(item.getCategory());
+
+        String[] words = query.split("\\s+");
+
+        for (String word : words) {
+            if (word.length() < 3) continue;
+            if (name.contains(word) || desc.contains(word) || cat.contains(word)) {
+                return true;
             }
         }
 
-        if (customerQuery == null || customerQuery.trim().isEmpty()) {
-            return "Please provide a valid query.";
-        }
-        
-        // Smart Recommendation based on user query
-        if (query.contains("non veg") || query.contains("nonveg") || query.contains("Non-Veg") ||
-            query.contains("chicken") || query.contains("mutton") || 
-            query.contains("fish")) {
-            
-            return "🍗 **Non-Veg Recommendations**:\n" + formatItems(nonVegItems);
-
-        } else if (query.contains("veg") || query.contains("vegetarian") || 
-                   query.contains("paneer") || query.contains("dal")) {
-            
-            return "🥗 **Veg Recommendations**:\n" + formatItems(vegItems);
-
-        } else {
-            // Default: Show both
-            return "🥗 **Veg Options**:\n" + formatItems(vegItems) +
-                   "\n\n🍗 **Non-Veg Options**:\n" + formatItems(nonVegItems);
-        }
+        return false;
     }
 
-    private String formatItems(List<MenuItem> items) {
+    private boolean isVegQuery(String query) {
+        return query.contains("veg") || query.contains("vegetarian") || 
+               query.contains("paneer") || query.contains("dal");
+    }
+
+    private boolean isNonVegQuery(String query) {
+        return query.contains("non") || query.contains("chicken") || query.contains("mutton") ||
+               query.contains("fish") || query.contains("egg") || query.contains("meat");
+    }
+
+    private boolean isVegItem(MenuItem item) {
+        String name = getLower(item.getItemName());
+        return name.contains("paneer") || name.contains("veg") || name.contains("dal") ||
+               name.contains("raita") || name.contains("paratha") || name.contains("naan") ||
+               name.contains("kofta") || name.contains("mushroom") || name.contains("palak");
+    }
+
+    private boolean isNonVegItem(MenuItem item) {
+        String name = getLower(item.getItemName());
+        return name.contains("chicken") || name.contains("mutton") || name.contains("fish") ||
+               name.contains("egg") || (name.contains("biryani") && !name.contains("veg"));
+    }
+
+    private String getLower(String str) {
+        return str == null ? "" : str.toLowerCase(Locale.ROOT);
+    }
+
+    private String formatResponse(String title, List<MenuItem> items) {
         if (items.isEmpty()) {
-            return "No items found in this category.";
+            return "Sorry, no matching items found for '" + title + "'.";
         }
 
-        return items.stream()
-                .limit(5)  // Show maximum 5 recommendations
-                .map(item -> "• " + item.getName() + " - ₹" + item.getPrice() +
-                            " (" + item.getCategory() + ")")
+        String list = items.stream()
+                .limit(8)
+                .map(item -> "• " + item.getItemName() + " - ₹" + item.getPrice())
                 .collect(Collectors.joining("\n"));
+
+        return title + ":\n" + list;
     }
 
-	@Override
-	public String chat(String message) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    private String formatBothResponses(List<MenuItem> allItems) {
+        List<MenuItem> veg = allItems.stream().filter(this::isVegItem).limit(5).toList();
+        List<MenuItem> nonVeg = allItems.stream().filter(this::isNonVegItem).limit(5).toList();
+
+        StringBuilder sb = new StringBuilder("Here are some popular items:\n\n");
+        sb.append("🥬 VEG:\n");
+        veg.forEach(i -> sb.append("• ").append(i.getItemName()).append(" - ₹").append(i.getPrice()).append("\n"));
+        sb.append("\n🍗 NON-VEG:\n");
+        nonVeg.forEach(i -> sb.append("• ").append(i.getItemName()).append(" - ₹").append(i.getPrice()).append("\n"));
+
+        return sb.toString();
+    }
 }

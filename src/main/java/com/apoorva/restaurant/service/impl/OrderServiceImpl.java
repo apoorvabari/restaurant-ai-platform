@@ -61,9 +61,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderResponse> getOrdersByUserId(Long userId) {
         List<Order> orders = orderRepository.findByUserId(userId);
-        return orders.stream()
-                .map(this::convertToResponse)
-                .toList();
+        return orders.stream().map(this::convertToResponse).toList();
     }
 
     @Override
@@ -77,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
         List<OrderItemResponse> items = order.getOrderItems().stream()
                 .map(item -> new OrderItemResponse(
                         item.getMenuItem().getId(),
-                        item.getMenuItem().getName(),
+                        item.getMenuItem().getItemName(),
                         item.getQuantity(),
                         item.getPrice()
                 ))

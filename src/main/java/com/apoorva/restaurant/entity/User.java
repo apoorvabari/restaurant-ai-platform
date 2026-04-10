@@ -16,17 +16,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String role; // "CUSTOMER", "ADMIN", "MANAGER"
-
     private String phone;
 
     @Column(nullable = false)
-    private Boolean enabled = true;
+    private String role;
+
+    private boolean enabled = true;
 }

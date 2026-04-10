@@ -1,5 +1,5 @@
 package com.apoorva.restaurant.entity;
-
+import java.util.List;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,8 +17,14 @@ public class MenuItem {
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String itemName;
+//    private String name;
 
+    
+    @Column(unique = true, nullable = false)
+    private String itemCode;
+    
+    
     @Column(length = 1000)
     private String description;
 

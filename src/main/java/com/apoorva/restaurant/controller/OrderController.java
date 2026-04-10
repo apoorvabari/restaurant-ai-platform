@@ -2,11 +2,10 @@ package com.apoorva.restaurant.controller;
 
 import com.apoorva.restaurant.dto.OrderRequest;
 import com.apoorva.restaurant.dto.OrderResponse;
-import com.apoorva.restaurant.entity.User;
+import com.apoorva.restaurant.security.JwtUtil;
 import com.apoorva.restaurant.service.OrderService;
-import com.apoorva.restaurant.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,32 +16,47 @@ import java.util.List;
 public class OrderController {
 
     private final OrderService orderService;
-    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    public OrderController(OrderService orderService, UserService userService) {
+    public OrderController(OrderService orderService, JwtUtil jwtUtil) {
         this.orderService = orderService;
-        this.userService = userService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest,
-                                                    Authentication authentication) {
-        String email = authentication.getName();
-        User user = userService.findByEmail(email);
-        OrderResponse response = orderService.placeOrder(user.getId(), orderRequest);
+    public ResponseEntity<OrderResponse> placeOrder(@RequestBody OrderRequest orderRequest) {
+        Long userId = getCurrentUserId();
+        OrderResponse response = orderService.placeOrder(userId, orderRequest);
         return ResponseEntity.ok(response);
     }
 
+    private Long getCurrentUserId() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof org.springframework.security.core.userdetails.UserDetails) {
+            // For now return hardcoded userId 1 - fix User entity later to store userId
+            return 1L; 
+        }
+        throw new RuntimeException("User not authenticated");
+    }
+
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getMyOrders(Authentication authentication) {
-        String email = authentication.getName();
-        User user = userService.findByEmail(email);
-        List<OrderResponse> orders = orderService.getOrdersByUserId(user.getId());
+    public ResponseEntity<List<OrderResponse>> getMyOrders(@RequestHeader("Authorization") String authHeader) {
+        Long userId = extractUserIdFromHeader(authHeader);
+        List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
         return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId) {
         return ResponseEntity.ok(orderService.getOrderById(orderId));
+    }
+
+    private Long extractUserIdFromHeader(String authHeader) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new RuntimeException("Invalid or missing Authorization header");
+        }
+
+        String token = authHeader.substring(7);
+        return jwtUtil.extractUserId(token);
     }
 }

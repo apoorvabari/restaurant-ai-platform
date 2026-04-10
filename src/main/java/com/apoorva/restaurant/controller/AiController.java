@@ -29,4 +29,10 @@ public class AiController {
         String reply = aiService.getMenuRecommendation(message);
         return ResponseEntity.ok(Map.of("reply", reply));
     }
+    
+    @PostMapping("/recommend")
+    public ResponseEntity<String> getRecommendation(@RequestBody String userPrompt) {
+        // For now, just a placeholder to prove the connection works
+        return ResponseEntity.ok("AI is thinking about your request: " + userPrompt);
+    }
 }

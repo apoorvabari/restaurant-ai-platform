@@ -7,6 +7,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface UserService extends UserDetailsService {
 
     User registerUser(AuthRequest authRequest);
-    
+
     User findByEmail(String email);
 }
