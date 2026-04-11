@@ -1,10 +1,10 @@
 package com.apoorva.restaurant.controller;
 
-import com.apoorva.restaurant.dto.AiRecommendationRequest;
-import com.apoorva.restaurant.dto.AiRecommendationResponse;
 import com.apoorva.restaurant.service.AiService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai")
@@ -17,12 +17,22 @@ public class AiController {
         this.aiService = aiService;
     }
 
+    @PostMapping("/chat")
+    public ResponseEntity<Map<String, String>> chat(@RequestBody Map<String, String> request) {
+        String message = request.get("message");
+
+        if (message == null || message.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("reply", "Please provide a message"));
+        }
+
+        String reply = aiService.getMenuRecommendation(message);
+        return ResponseEntity.ok(Map.of("reply", reply));
+    }
+    
     @PostMapping("/recommend")
-    public ResponseEntity<AiRecommendationResponse> recommendMenu(@RequestBody(required = false) AiRecommendationRequest request) {
-
-        String customerQuery = request != null ? request.getCustomerQuery() : "";
-        String reply = aiService.getMenuRecommendation(customerQuery);
-
-        return ResponseEntity.ok(new AiRecommendationResponse(reply));
+    public ResponseEntity<String> getRecommendation(@RequestBody String userPrompt) {
+        // For now, just a placeholder to prove the connection works
+        return ResponseEntity.ok("AI is thinking about your request: " + userPrompt);
     }
 }

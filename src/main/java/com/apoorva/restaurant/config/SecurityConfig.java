@@ -23,7 +23,7 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**", "/test/**", "/api/menu/**", "/api/ai/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/test/**", "/api/menu/**", "/api/ai/**","/api/ai/chat").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

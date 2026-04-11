@@ -8,5 +8,22 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AiRecommendationRequest {
-    private String customerQuery;
+	private String userPreference;
+    private Long userId;
+
+    public String getUserPreference() {
+        return userPreference;
+    }
+
+    public void setUserPreference(String userPreference) {
+        this.userPreference = userPreference;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 }

@@ -2,6 +2,8 @@ package com.apoorva.restaurant.controller;
 
 import com.apoorva.restaurant.dto.OrderRequest;
 import com.apoorva.restaurant.dto.OrderResponse;
+import com.apoorva.restaurant.entity.User;
+import com.apoorva.restaurant.repository.UserRepository;
 import com.apoorva.restaurant.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,12 @@ public class OrderController {
 
     @Autowired
     private OrderService orderService;
+    private UserRepository userRepository;
+    
+    public OrderController(OrderService orderService, UserRepository userRepository) {
+        this.orderService = orderService;
+        this.userRepository = userRepository;
+    }
 
     // Place New Order
     @PostMapping
@@ -49,7 +57,11 @@ public class OrderController {
 
     // Temporary helper method (We will improve this later with proper JWT parsing)
     private Long extractUserIdFromAuthentication(Authentication authentication) {
-        // For now, we'll get userId from SecurityContext (We'll make it better soon)
-        return 1L; // Replace this with real logic in next step
-    }
+    	 String email = authentication.getName();
+
+         User user = userRepository.findByEmail(email)
+                 .orElseThrow(() -> new RuntimeException("Authenticated user not found: " + email));
+
+         return user.getId();
+     }
 }
