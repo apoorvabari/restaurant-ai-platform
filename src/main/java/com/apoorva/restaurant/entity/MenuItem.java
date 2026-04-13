@@ -34,7 +34,10 @@ public class MenuItem {
     @Column(nullable = false)
     private String category;
 
-    private Boolean available = true;
+    private Boolean is_available = true;
+    
+    private Boolean is_deleted = true;
+    private Boolean deleted_at = true;
 
-    private String imageUrl;
+    //private String imageUrl;
 }

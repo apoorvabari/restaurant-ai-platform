@@ -21,10 +21,14 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> {}) 
             .authorizeHttpRequests(auth -> auth
+                // Public endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/menu/**").permitAll()
-                .requestMatchers("/api/ai/**").authenticated()
+                .requestMatchers("/api/ai/**").permitAll()   // allow AI endpoints
+                .requestMatchers("/api/reservations/**").permitAll() // allow reservations
+                .requestMatchers("/api/orders/**").authenticated()   // orders need login
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
@@ -34,8 +38,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // REMOVED: BCryptPasswordEncoder bean was here, causing the conflict
-
+   
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

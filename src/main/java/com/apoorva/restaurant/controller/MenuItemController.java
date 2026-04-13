@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/menu")
+@RequestMapping("/api/menu-items") 
 @CrossOrigin(origins = "*")
 public class MenuItemController {
 
@@ -35,8 +35,8 @@ public class MenuItemController {
         item.setDescription(request.getDescription());
         item.setCategory(request.getCategory());
         item.setPrice(request.getPrice());
-        item.setImageUrl(request.getImageUrl());
-        item.setAvailable(request.getAvailable());
+        //item.setImageUrl(request.getImageUrl());
+        item.setIs_available(request.getAvailable());
         return ResponseEntity.ok(menuItemRepository.save(item));
     }
 
