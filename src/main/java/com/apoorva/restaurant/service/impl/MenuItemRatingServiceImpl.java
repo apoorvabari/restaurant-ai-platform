@@ -31,8 +31,9 @@ public class MenuItemRatingServiceImpl implements MenuItemRatingService {
 
     @Override
     public void submitRating(MenuItemRatingRequest request) {
-        MenuItem menuItem = menuItemRepository.findById(request.getMenuItemId())
-                .orElseThrow(() -> new RuntimeException("Menu item not found with id: " + request.getMenuItemId()));
+        Long menuItemId = request.getMenuItemId();
+        MenuItem menuItem = menuItemRepository.findById(menuItemId)
+                .orElseThrow(() -> new RuntimeException("Menu item not found with id: " + menuItemId));
 
         // Check if user already rated this item (if userId is provided)
         if (request.getUserId() != null) {
@@ -61,12 +62,12 @@ public class MenuItemRatingServiceImpl implements MenuItemRatingService {
         List<TopRatedMenuItemResponse> topRatedItems = new ArrayList<>();
 
         for (Object[] result : results) {
-            Long menuItemId = (Long) result[0];
-            Double avgRating = (Double) result[1];
-            Long totalRatings = (Long) result[2];
+            Long menuItemId = result[0] != null ? ((Number) result[0]).longValue() : null;
+            Double avgRating = result[1] != null ? ((Number) result[1]).doubleValue() : null;
+            Long totalRatings = result[2] != null ? ((Number) result[2]).longValue() : null;
 
             MenuItem menuItem = menuItemRepository.findById(menuItemId).orElse(null);
-            if (menuItem != null) {
+            if (menuItem != null && avgRating != null) {
                 BigDecimal roundedRating = BigDecimal.valueOf(avgRating)
                         .setScale(1, RoundingMode.HALF_UP);
 
