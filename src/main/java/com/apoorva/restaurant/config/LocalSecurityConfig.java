@@ -40,32 +40,8 @@ public class LocalSecurityConfig {
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/menu/**").permitAll()
-                .requestMatchers("/api/menu-ratings/**").permitAll()
-                .requestMatchers("/api/ai/**").permitAll()
-                .requestMatchers("/api/tables/**").permitAll()
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/admin/add-menu-images").permitAll()
-                .requestMatchers("/api/admin/create-feedback-table").permitAll()
-                .requestMatchers("/api/admin/reset-table-status").permitAll()
-                .requestMatchers("/test").permitAll()
-                .requestMatchers("/ws/**").permitAll()
-                // Feedback endpoint - public
-                .requestMatchers("/api/v1/user/feedback").permitAll()
-                // V1 API endpoints
-                .requestMatchers("/api/v1/user/tables").authenticated()
-                .requestMatchers("/api/v1/user/tables/**").authenticated()
-                .requestMatchers("/api/v1/user/orders").authenticated()
-                .requestMatchers("/api/v1/user/orders/**").authenticated()
-                .requestMatchers("/api/v1/user/reservations").authenticated()
-                .requestMatchers("/api/v1/user/reservations/**").authenticated()
-                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                // Legacy endpoints for backward compatibility
-                .requestMatchers("/api/reservations/**").authenticated()
-                .requestMatchers("/api/orders/**").authenticated()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .anyRequest().permitAll()
+            );
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
