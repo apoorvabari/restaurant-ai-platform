@@ -11,7 +11,6 @@ public class FeedbackRequest {
     @NotBlank(message = "Customer name is required")
     private String customerName;
 
-    @NotBlank(message = "Email is required")
     private String email;
 
     @NotNull(message = "Rating is required")
