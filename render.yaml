@@ -21,6 +21,8 @@ services:
         generateValue: true
       - key: JWT_EXPIRATION
         value: 86400000
+      - key: OPENAI_API_KEY
+        generateValue: true
 
 databases:
   - name: restaurant-db
