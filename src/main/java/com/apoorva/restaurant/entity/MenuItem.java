@@ -1,5 +1,4 @@
 package com.apoorva.restaurant.entity;
-import java.util.List;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,10 +33,18 @@ public class MenuItem {
     @Column(nullable = false)
     private String category;
 
-    private Boolean is_available = true;
+    private Boolean available = true;
     
-    private Boolean is_deleted = true;
-    private Boolean deleted_at = true;
+    private Boolean deleted = false;
+    private Boolean deleted_at = false;
 
-    //private String imageUrl;
+    private String imageUrl;
+
+    public void setAvailable(Boolean available) {
+        this.available = available;
+    }
+
+    public Boolean getAvailable() {
+        return available;
+    }
 }

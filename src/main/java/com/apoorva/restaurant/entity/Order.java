@@ -1,16 +1,19 @@
 package com.apoorva.restaurant.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "orders")
+@SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,6 +34,10 @@ public class Order {
 
     private LocalDateTime orderTime = LocalDateTime.now();
 
+    @Column(name = "deleted")
+    private boolean deleted = false;
+
+    @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
@@ -39,6 +46,7 @@ public class Order {
         CONFIRMED,
         PREPARING,
         READY,
+        DELIVERED,
         COMPLETED,
         CANCELLED
     }

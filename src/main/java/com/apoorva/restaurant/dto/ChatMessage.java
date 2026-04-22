@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AiRecommendationRequest {
-    private String customerQuery;
+public class ChatMessage {
+    private String role; // "user" or "ai"
+    private String text;
 }

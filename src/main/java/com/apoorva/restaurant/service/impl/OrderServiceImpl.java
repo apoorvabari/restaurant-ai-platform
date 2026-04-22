@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@SuppressWarnings("null")
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
@@ -65,10 +66,39 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream().map(this::convertToResponse).toList();
+    }
+
+    @Override
     public OrderResponse getOrderById(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         return convertToResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, String status) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        try {
+            order.setStatus(Order.OrderStatus.valueOf(status.toUpperCase()));
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid order status: " + status);
+        }
+        Order savedOrder = orderRepository.save(order);
+        return convertToResponse(savedOrder);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteOrder(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        order.setDeleted(true);
+        orderRepository.save(order);
     }
 
     private OrderResponse convertToResponse(Order order) {
