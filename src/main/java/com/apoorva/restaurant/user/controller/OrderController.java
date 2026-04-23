@@ -42,7 +42,7 @@ public class OrderController {
             OrderResponse response = orderService.placeOrder(userId, orderRequest);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("Error placing order. Request: {}, Auth: {}", orderRequest, authentication, e);
+            logger.error("Error placing order. Request: {}", orderRequest, e);
             throw e;
         }
     }
@@ -97,30 +97,22 @@ public class OrderController {
     }
 
     private Long extractUserId(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String username = authentication.getName();
+        if (username == null || username.isEmpty() || "anonymousUser".equals(username)) {
+            throw new RuntimeException("User not authenticated");
+        }
+
         try {
-            if (authentication == null) {
-                throw new RuntimeException("User not authenticated");
-            }
-
-            // For local authentication, use the username (email) as the user identifier
-            String username = authentication.getName();
-            if (username != null && !username.isEmpty()) {
-                try {
-                    // Try to parse as Long ID
-                    return Long.parseLong(username);
-                } catch (NumberFormatException e) {
-                    // If username is an email, look up the user ID
-                    logger.warn("Username is not a numeric ID, looking up by email: {}", username);
-                    User user = userRepository.findByEmail(username)
-                            .orElseThrow(() -> new RuntimeException("User not found with email: " + username));
-                    return user.getId();
-                }
-            }
-
-            throw new RuntimeException("No username found in authentication");
-        } catch (Exception e) {
-            logger.error("Error extracting user ID from authentication", e);
-            throw new RuntimeException("Failed to extract user ID", e);
+            return Long.parseLong(username);
+        } catch (NumberFormatException e) {
+            logger.warn("Username is not a numeric ID, looking up by email: {}", username);
+            User user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("User not found with email: " + username));
+            return user.getId();
         }
     }
 }

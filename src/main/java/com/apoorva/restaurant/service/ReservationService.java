@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface ReservationService {
-    ReservationResponse createReservation(ReservationRequest request);
+    ReservationResponse createReservation(ReservationRequest request, Long userId);
     List<ReservationResponse> getAllReservations();
     Page<ReservationResponse> getAllReservations(Pageable pageable);
     void softDeleteReservation(Long reservationId);

@@ -6,8 +6,10 @@ import com.apoorva.restaurant.dto.ReservationResponse;
 import com.apoorva.restaurant.entity.DiningTable;
 import com.apoorva.restaurant.entity.Reservation;
 import com.apoorva.restaurant.entity.Reservation.ReservationStatus;
+import com.apoorva.restaurant.entity.User;
 import com.apoorva.restaurant.exception.DuplicateBookingException;
 import com.apoorva.restaurant.repository.ReservationRepository;
+import com.apoorva.restaurant.repository.UserRepository;
 import com.apoorva.restaurant.service.ReservationService;
 import com.apoorva.restaurant.service.TableService;
 import org.springframework.data.domain.Page;
@@ -29,15 +31,17 @@ public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
     private final TableService tableService;
+    private final UserRepository userRepository;
 
-    public ReservationServiceImpl(ReservationRepository reservationRepository, TableService tableService) {
+    public ReservationServiceImpl(ReservationRepository reservationRepository, TableService tableService, UserRepository userRepository) {
         this.reservationRepository = reservationRepository;
         this.tableService = tableService;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
-    public ReservationResponse createReservation(ReservationRequest request) {
+    public ReservationResponse createReservation(ReservationRequest request, Long userId) {
         // Validate date is not in the past (allow today's date)
         if (request.getReservationDate().isBefore(LocalDate.now())) {
             throw new RuntimeException("Reservation date cannot be in the past");
@@ -112,11 +116,8 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setDurationHours(request.getDurationHours() != null ? request.getDurationHours() : 2);
         reservation.setSpecialRequest(request.getSpecialRequest());
 
-        // Set userId from security context
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            reservation.setUserId(authentication.getName());
-        }
+        // Set userId from parameter
+        reservation.setUserId(userId.toString());
 
         if (request.getTableId() != null) {
             reservation.setTableId(request.getTableId());

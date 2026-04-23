@@ -22,11 +22,14 @@ public class UserReservationService {
         this.reservationService = reservationService;
     }
 
-    public ReservationResponse createReservation(ReservationRequest request) {
+    public ReservationResponse createReservation(ReservationRequest request, Long userId) {
         if (request == null) {
             throw new IllegalArgumentException("Reservation request cannot be null");
         }
-        return reservationService.createReservation(request);
+        if (userId == null) {
+            throw new IllegalArgumentException("User ID cannot be null");
+        }
+        return reservationService.createReservation(request, userId);
     }
 
     public List<ReservationResponse> getMyReservations(String userId, int page, int size, String sortBy) {

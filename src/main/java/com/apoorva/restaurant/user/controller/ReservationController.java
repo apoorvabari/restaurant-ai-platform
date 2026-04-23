@@ -1,8 +1,9 @@
 package com.apoorva.restaurant.user.controller;
 
-import com.apoorva.restaurant.dto.PublicReservationResponse;
 import com.apoorva.restaurant.dto.ReservationRequest;
 import com.apoorva.restaurant.dto.ReservationResponse;
+import com.apoorva.restaurant.entity.User;
+import com.apoorva.restaurant.repository.UserRepository;
 import com.apoorva.restaurant.service.ReservationService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -23,15 +24,18 @@ public class ReservationController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservationController.class);
     private final ReservationService reservationService;
+    private final UserRepository userRepository;
 
-    public ReservationController(ReservationService reservationService) {
+    public ReservationController(ReservationService reservationService, UserRepository userRepository) {
         this.reservationService = reservationService;
+        this.userRepository = userRepository;
     }
 
     @PostMapping
-    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody ReservationRequest request) {
+    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody ReservationRequest request, Authentication authentication) {
         try {
-            return ResponseEntity.ok(reservationService.createReservation(request));
+            Long userId = extractUserId(authentication);
+            return ResponseEntity.ok(reservationService.createReservation(request, userId));
         } catch (Exception e) {
             logger.error("Error creating reservation", e);
             throw e;
@@ -39,7 +43,7 @@ public class ReservationController {
     }
 
     @GetMapping
-    public ResponseEntity<List<PublicReservationResponse>> getAllReservations(
+    public ResponseEntity<List<ReservationResponse>> getAllReservations(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "reservationDate") String sortBy,
@@ -47,8 +51,8 @@ public class ReservationController {
     ) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
-            String userId = authentication.getName();
-            Page<PublicReservationResponse> reservations = reservationService.getPublicUserReservations(userId, pageable);
+            Long userId = extractUserId(authentication);
+            Page<ReservationResponse> reservations = reservationService.getUserReservations(userId.toString(), pageable);
             return ResponseEntity.ok(reservations.getContent());
         } catch (Exception e) {
             logger.error("Error fetching user reservations", e);
@@ -59,12 +63,32 @@ public class ReservationController {
     @DeleteMapping("/{reservationId}")
     public ResponseEntity<Void> softDeleteReservation(@PathVariable Long reservationId, Authentication authentication) {
         try {
-            String userId = authentication.getName();
-            reservationService.deleteUserReservation(reservationId, userId);
+            Long userId = extractUserId(authentication);
+            reservationService.deleteUserReservation(reservationId, userId.toString());
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             logger.error("Error deleting reservation with id: {}", reservationId, e);
             throw e;
+        }
+    }
+
+    private Long extractUserId(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        String username = authentication.getName();
+        if (username == null || username.isEmpty() || "anonymousUser".equals(username)) {
+            throw new RuntimeException("User not authenticated");
+        }
+
+        try {
+            return Long.parseLong(username);
+        } catch (NumberFormatException e) {
+            logger.warn("Username is not a numeric ID, looking up by email: {}", username);
+            User user = userRepository.findByEmail(username)
+                    .orElseThrow(() -> new RuntimeException("User not found with email: " + username));
+            return user.getId();
         }
     }
 }
