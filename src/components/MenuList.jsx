@@ -56,7 +56,7 @@ const MenuList = ({ items = [], status, limit }) => {
       {displayItems.map((item, index) => (
         <div
           key={item.id}
-          className="glass-card rounded-2xl overflow-hidden group"
+          className="bg-slate-900/80 rounded-2xl overflow-hidden group border border-amber-500/30"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
           {/* Image / Emoji Header */}

@@ -10,6 +10,7 @@ const ReservationForm = () => {
   const { list: tables } = useSelector((state) => state.tables);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const [lastReservation, setLastReservation] = useState(null);
   const [formData, setFormData] = useState({
     customerName: "",
     phoneNumber: "",
@@ -79,6 +80,12 @@ const ReservationForm = () => {
 
     const result = await dispatch(createReservation(formData));
     if (!result.error) {
+      const selectedTable = tables.find(t => t.id === formData.tableId);
+      setLastReservation({
+        ...formData,
+        tableNumber: selectedTable?.tableNumber,
+        tableCapacity: selectedTable?.capacity,
+      });
       dispatch(fetchTables()); // Refresh table statuses after booking
       dispatch(fetchReservations()); // Refresh reservations list after booking
       setSubmitted(true);
@@ -92,7 +99,7 @@ const ReservationForm = () => {
         durationHours: 2,
         specialRequest: "",
       });
-      setTimeout(() => setSubmitted(false), 4000);
+      setTimeout(() => setSubmitted(false), 8000);
     } else {
       setError(result.error.message || "Failed to create reservation. Please try again.");
     }
@@ -135,15 +142,53 @@ const ReservationForm = () => {
   };
 
   return (
-    <div className="glass rounded-3xl p-8 relative overflow-hidden">
+    <div className="bg-amber-950/70 backdrop-blur-md rounded-3xl p-8 relative overflow-hidden border border-amber-700/50 shadow-2xl">
       {/* Success overlay */}
-      {submitted && (
-        <div className="absolute inset-0 z-10 bg-surface/90 backdrop-blur-sm flex flex-col items-center justify-center animate-fade-in">
+      {submitted && lastReservation && (
+        <div className="absolute inset-0 z-10 bg-surface/90 backdrop-blur-sm flex flex-col items-center justify-center animate-fade-in p-6">
           <div className="w-16 h-16 bg-green-500/10 border border-green-500/20 rounded-full flex items-center justify-center mb-4">
             <CheckCircle className="w-8 h-8 text-green-400" />
           </div>
-          <h3 className="text-xl font-bold text-white">Reservation Confirmed!</h3>
-          <p className="text-sm text-slate-400 mt-1">We'll see you soon 🎉</p>
+          <h3 className="text-xl font-bold text-white mb-4">Reservation Confirmed!</h3>
+          
+          <div className="glass-subtle p-6 rounded-2xl w-full max-w-sm space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Name:</span>
+              <span className="text-white font-medium">{lastReservation.customerName}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Phone:</span>
+              <span className="text-white font-medium">{lastReservation.phoneNumber}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Guests:</span>
+              <span className="text-white font-medium">{lastReservation.numberOfGuests}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Date:</span>
+              <span className="text-white font-medium">{new Date(lastReservation.reservationDate).toLocaleDateString()}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Time:</span>
+              <span className="text-white font-medium">{lastReservation.reservationTime}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Table:</span>
+              <span className="text-white font-medium">Table {lastReservation.tableNumber}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400 text-sm">Duration:</span>
+              <span className="text-white font-medium">{lastReservation.durationHours} hour(s)</span>
+            </div>
+            {lastReservation.specialRequest && (
+              <div className="pt-2 border-t border-white/10">
+                <span className="text-slate-400 text-sm block mb-1">Special Request:</span>
+                <span className="text-white text-sm">{lastReservation.specialRequest}</span>
+              </div>
+            )}
+          </div>
+          
+          <p className="text-sm text-slate-400 mt-4">We'll see you soon 🎉</p>
         </div>
       )}
 
@@ -155,15 +200,15 @@ const ReservationForm = () => {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-        <Calendar className="w-6 h-6 text-brand-400" />
+      <h2 className="text-2xl font-bold text-amber-100 mb-6 flex items-center gap-3">
+        <Calendar className="w-6 h-6 text-amber-500" />
         Book a Table
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Name */}
         <div className="relative">
-          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
           <input
             type="text"
             name="customerName"
@@ -171,13 +216,13 @@ const ReservationForm = () => {
             value={formData.customerName}
             onChange={handleChange}
             required
-            className="glass-input pl-11"
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl pl-11 pr-4 py-3 text-amber-100 placeholder:text-amber-400/50 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
           />
         </div>
 
         {/* Phone */}
         <div className="relative">
-          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
           <input
             type="text"
             name="phoneNumber"
@@ -186,32 +231,32 @@ const ReservationForm = () => {
             onChange={handleChange}
             required
             maxLength="10"
-            className="glass-input pl-11 pr-20"
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl pl-11 pr-20 py-3 text-amber-100 placeholder:text-amber-400/50 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
           />
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-amber-400">
             {formData.phoneNumber.length}/10
           </span>
         </div>
 
         {/* Guests Stepper */}
         <div>
-          <label className="flex items-center gap-2 text-sm text-slate-400 mb-2">
-            <Users className="w-4 h-4 text-brand-400" />
+          <label className="flex items-center gap-2 text-sm text-amber-200 mb-2">
+            <Users className="w-4 h-4 text-amber-500" />
             Number of Guests
           </label>
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => handleGuestChange(-1)}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white text-lg font-bold hover:bg-white/10 transition-all flex items-center justify-center"
+              className="w-10 h-10 rounded-xl bg-amber-800/50 border border-amber-700 text-amber-100 text-lg font-bold hover:bg-amber-700/50 transition-all flex items-center justify-center"
             >
               −
             </button>
-            <span className="text-2xl font-bold text-white w-10 text-center">{formData.numberOfGuests}</span>
+            <span className="text-2xl font-bold text-amber-100 w-10 text-center">{formData.numberOfGuests}</span>
             <button
               type="button"
               onClick={() => handleGuestChange(1)}
-              className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white text-lg font-bold hover:bg-white/10 transition-all flex items-center justify-center"
+              className="w-10 h-10 rounded-xl bg-amber-800/50 border border-amber-700 text-amber-100 text-lg font-bold hover:bg-amber-700/50 transition-all flex items-center justify-center"
             >
               +
             </button>
@@ -220,22 +265,22 @@ const ReservationForm = () => {
 
         {/* Date */}
         <div className="relative">
-          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
           <input
             type="date"
             name="reservationDate"
             value={formData.reservationDate}
             onChange={handleChange}
             required
-            className="glass-input pl-11"
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl pl-11 pr-4 py-3 text-amber-100 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
             min={new Date().toISOString().split("T")[0]}
           />
         </div>
 
         {/* Time Slots */}
         <div>
-          <label className="flex items-center gap-2 text-sm text-slate-400 mb-2">
-            <Clock className="w-4 h-4 text-brand-400" />
+          <label className="flex items-center gap-2 text-sm text-amber-200 mb-2">
+            <Clock className="w-4 h-4 text-amber-500" />
             Select Time
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -249,10 +294,10 @@ const ReservationForm = () => {
                   disabled={isDisabled}
                   className={`py-2 text-xs font-medium rounded-xl border transition-all duration-300 ${
                     formData.reservationTime === slot
-                      ? "bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20"
+                      ? "bg-amber-500 border-amber-500 text-amber-950 shadow-lg shadow-amber-500/20"
                       : isDisabled
-                      ? "bg-slate-500/10 border-slate-500/20 text-slate-600 cursor-not-allowed"
-                      : "bg-white/[0.03] border-white/10 text-slate-400 hover:text-white hover:border-white/20"
+                      ? "bg-amber-900/30 border-amber-800 text-amber-600 cursor-not-allowed"
+                      : "bg-amber-900/50 border-amber-700 text-amber-200 hover:border-amber-500 hover:text-amber-100"
                   }`}
                 >
                   {slot}
@@ -261,7 +306,7 @@ const ReservationForm = () => {
             })}
           </div>
           {formData.reservationDate && new Date(formData.reservationDate).toDateString() === new Date().toDateString() && (
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-amber-400 mt-2">
               ⚠️ Past time slots are disabled for today
             </p>
           )}
@@ -269,15 +314,15 @@ const ReservationForm = () => {
 
         {/* Table Selection */}
         <div>
-          <label className="flex items-center gap-2 text-sm text-slate-400 mb-2">
-            <Table className="w-4 h-4 text-brand-400" />
+          <label className="flex items-center gap-2 text-sm text-amber-200 mb-2">
+            <Table className="w-4 h-4 text-amber-500" />
             Select Table <span className="text-red-400">*</span>
           </label>
           <select
             name="tableId"
             value={formData.tableId}
             onChange={handleChange}
-            className="glass-input bg-surface/80 text-slate-900"
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl px-4 py-3 text-amber-100 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
             required
           >
             <option value="">Select a table</option>
@@ -296,14 +341,14 @@ const ReservationForm = () => {
                     key={table.id} 
                     value={table.id}
                     disabled={isDisabled}
-                    className={isDisabled ? "text-slate-600" : "text-slate-900"}
+                    className={isDisabled ? "text-amber-600" : "text-amber-950"}
                   >
                     {statusColor} Table {table.tableNumber} ({table.status}) - Capacity: {table.capacity}
                   </option>
                 );
               })}
           </select>
-          <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
+          <div className="flex items-center gap-4 mt-2 text-xs text-amber-400">
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Available</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500"></span> Booked</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> Occupied</span>
@@ -313,8 +358,8 @@ const ReservationForm = () => {
 
         {/* Duration Hours */}
         <div>
-          <label className="flex items-center gap-2 text-sm text-slate-400 mb-2">
-            <Clock className="w-4 h-4 text-brand-400" />
+          <label className="flex items-center gap-2 text-sm text-amber-200 mb-2">
+            <Clock className="w-4 h-4 text-amber-500" />
             Duration (hours)
           </label>
           <div className="flex items-center gap-2">
@@ -325,8 +370,8 @@ const ReservationForm = () => {
                 onClick={() => setFormData({ ...formData, durationHours: hours })}
                 className={`flex-1 py-2 text-sm font-medium rounded-xl border transition-all duration-300 ${
                   formData.durationHours === hours
-                    ? "bg-brand-500 border-brand-500 text-white shadow-lg shadow-brand-500/20"
-                    : "bg-white/[0.03] border-white/10 text-slate-400 hover:text-white hover:border-white/20"
+                    ? "bg-amber-500 border-amber-500 text-amber-950 shadow-lg shadow-amber-500/20"
+                    : "bg-amber-900/50 border-amber-700 text-amber-200 hover:border-amber-500 hover:text-amber-100"
                 }`}
               >
                 {hours}h
@@ -337,14 +382,14 @@ const ReservationForm = () => {
 
         {/* Special Request */}
         <div className="relative">
-          <MessageSquare className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
+          <MessageSquare className="absolute left-4 top-4 w-4 h-4 text-amber-500" />
           <textarea
             name="specialRequest"
             placeholder="Special requests (optional)"
             value={formData.specialRequest}
             onChange={handleChange}
             rows="3"
-            className="glass-input pl-11 resize-none"
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl pl-11 pr-4 py-3 text-amber-100 placeholder:text-amber-400/50 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all resize-none"
           />
         </div>
 
@@ -352,7 +397,7 @@ const ReservationForm = () => {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="btn-primary w-full flex items-center justify-center gap-2"
+          className="w-full bg-amber-500 hover:bg-amber-400 text-amber-950 font-semibold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
         >
           {status === "loading" ? (
             <>

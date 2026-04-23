@@ -6,7 +6,6 @@ import ProtectedRoute from './ProtectedRoutes';
 import AdminPage from '../features/admin/pages/AdminPage';
 
 // User Routes
-import DashboardPage from '../features/user/pages/DashboardPage';
 import OrdersPage from '../features/user/pages/OrdersPage';
 import ReservationPage from '../features/user/pages/ReservationPage';
 import FeedbackPage from '../features/user/pages/FeedbackPage';
@@ -39,14 +38,6 @@ const AppRoutes = () => {
       />
 
       {/* User Routes - Protected, requires authentication */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <DashboardPage />
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/orders"
         element={

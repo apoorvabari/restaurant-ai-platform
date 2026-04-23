@@ -8,7 +8,7 @@ import { ArrowRight, Utensils, CalendarDays, Star, Users, ChefHat, MessageSquare
 
 const stats = [
   { icon: Utensils, label: "Dishes", value: "500+", color: "from-brand-500 to-accent-500" },
-  { icon: Users, label: "Happy Customers", value: "50K+", color: "from-pink-500 to-rose-500" },
+  { icon: Users, label: "Happy Customers", value: "50K+", color: "from-emerald-500 to-green-500" },
   { icon: Star, label: "Rating", value: "4.9★", color: "from-accent-400 to-brand-500" },
   { icon: ChefHat, label: "Expert Chefs", value: "25+", color: "from-cyan-500 to-blue-500" },
 ];
@@ -24,12 +24,77 @@ const HomePage = () => {
   }, [dispatch]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Ambient background effects */}
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-900 via-amber-800 to-green-900">
+      {/* Forest canopy gradient */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-green-900/40 via-transparent to-amber-900/30" />
       </div>
+
+      {/* Tree trunk and branch decorative elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {/* Left tree trunk */}
+        <div className="absolute left-0 top-0 w-32 h-full bg-gradient-to-r from-amber-950 via-amber-900 to-transparent" />
+        <div className="absolute left-20 top-10 w-48 h-32 bg-gradient-to-br from-amber-900 to-transparent rounded-full blur-2xl" />
+        
+        {/* Right tree trunk */}
+        <div className="absolute right-0 top-0 w-32 h-full bg-gradient-to-l from-amber-950 via-amber-900 to-transparent" />
+        <div className="absolute right-20 top-20 w-40 h-40 bg-gradient-to-bl from-amber-900 to-transparent rounded-full blur-2xl" />
+        
+        {/* Branches overhead */}
+        <div className="absolute top-0 left-1/4 w-96 h-64 bg-gradient-to-br from-green-900/60 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-0 right-1/4 w-80 h-56 bg-gradient-to-bl from-green-900/60 to-transparent rounded-full blur-3xl" />
+        <div className="absolute top-10 left-1/2 w-64 h-48 bg-gradient-to-b from-green-800/50 to-transparent rounded-full blur-3xl" />
+      </div>
+
+      {/* String lights wrapped around branches */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 20 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-amber-300 rounded-full animate-pulse"
+            style={{
+              left: `${10 + (i % 5) * 20}%`,
+              top: `${5 + Math.floor(i / 5) * 15}%`,
+              animationDelay: `${i * 0.3}s`,
+              boxShadow: '0 0 10px rgba(251, 191, 36, 0.8), 0 0 20px rgba(251, 191, 36, 0.6)',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Lantern-style hanging lights */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute animate-swing"
+            style={{
+              left: `${15 + i * 14}%`,
+              top: '5%',
+              animationDuration: `${4 + i * 0.5}s`,
+              animationDelay: `${i * 0.2}s`,
+            }}
+          >
+            <div className="w-1 h-8 bg-amber-700 mx-auto" />
+            <div className="w-8 h-10 bg-gradient-to-b from-amber-400 to-amber-600 rounded-b-lg shadow-lg" style={{
+              boxShadow: '0 0 20px rgba(251, 191, 36, 0.6), 0 0 40px rgba(251, 191, 36, 0.4)',
+            }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Window with greenery */}
+      <div className="fixed top-20 right-10 w-32 h-48 bg-gradient-to-b from-green-300/20 to-green-400/20 rounded-lg border-4 border-amber-800 pointer-events-none" style={{
+        boxShadow: 'inset 0 0 20px rgba(34, 197, 94, 0.3)',
+      }}>
+        <div className="absolute inset-0 bg-gradient-to-b from-green-400/30 to-green-500/40" />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-4xl">🌿</div>
+        </div>
+      </div>
+
+      {/* Wooden floor effect */}
+      <div className="fixed bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-amber-950/50 to-transparent pointer-events-none" />
 
       {/* Hero Section */}
       {isAuthenticated && (
@@ -60,35 +125,10 @@ const HomePage = () => {
                 <span className="gradient-text">PERFECTION</span>
               </h1>
 
-              <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+              <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-16 leading-relaxed">
                 Experience fine dining at its best. Browse our menu, make reservations,
                 and track orders — all in one place.
               </p>
-
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-                <Link to="/menu" className="btn-primary flex items-center gap-2 text-lg">
-                  Explore Menu
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-                <Link to="/reservations" className="btn-secondary flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4" />
-                  Reserve a Table
-                </Link>
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-20 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              {stats.map((stat, i) => (
-                <div key={i} className="glass-subtle p-5 text-center group hover:bg-white/[0.06] transition-all duration-300">
-                  <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} mx-auto mb-3 flex items-center justify-center shadow-lg opacity-80`}>
-                    <stat.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
-                </div>
-              ))}
             </div>
 
             {/* Top Rated Suggestions */}
@@ -141,7 +181,7 @@ const HomePage = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="glass-subtle p-8 rounded-3xl hover:bg-white/[0.06] transition-all duration-300 group">
+            <div className="bg-slate-800/60 p-8 rounded-3xl hover:bg-slate-700/60 transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Utensils className="w-7 h-7 text-white" />
               </div>
@@ -151,8 +191,8 @@ const HomePage = () => {
               </p>
             </div>
 
-            <div className="glass-subtle p-8 rounded-3xl hover:bg-white/[0.06] transition-all duration-300 group">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
+            <div className="bg-slate-800/60 p-8 rounded-3xl hover:bg-slate-700/60 transition-all duration-300 group">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <ChefHat className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-xl font-bold text-white mb-3">Master Chefs at Work</h3>
@@ -161,7 +201,7 @@ const HomePage = () => {
               </p>
             </div>
 
-            <div className="glass-subtle p-8 rounded-3xl hover:bg-white/[0.06] transition-all duration-300 group">
+            <div className="bg-slate-800/60 p-8 rounded-3xl hover:bg-slate-700/60 transition-all duration-300 group">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform">
                 <Star className="w-7 h-7 text-white" />
               </div>
@@ -170,6 +210,89 @@ const HomePage = () => {
                 More than just food, we create memories. From the aroma that welcomes you to the final presentation, every detail is designed to make your dining experience truly exceptional and memorable.
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Signature Dishes Section */}
+      <section className="relative px-6 pb-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="bg-slate-900/80 rounded-3xl p-10 md:p-16 relative overflow-hidden border border-amber-500/30">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
+
+            <div className="relative">
+              <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                  <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 heading-elegant">
+                    Our <span className="gradient-text">Signature</span> Creations
+                  </h2>
+                  <p className="text-lg text-slate-400 mb-8 leading-relaxed">
+                    Discover dishes that have earned us recognition from food critics and loyal customers alike. Each signature dish is a masterpiece of flavor, presentation, and innovation.
+                  </p>
+                  <ul className="space-y-4 mb-8">
+                    <li className="flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
+                      <span className="text-slate-300">Grilled Salmon with Lemon Herb Butter</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
+                      <span className="text-slate-300">Truffle Infused Risotto with Wild Mushrooms</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
+                      <span className="text-slate-300">Pan-Seared Sea Bass with Lemon Butter Sauce</span>
+                    </li>
+                    <li className="flex items-start gap-3">
+                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
+                      <span className="text-slate-300">Chocolate Lava Cake with Vanilla Ice Cream</span>
+                    </li>
+                  </ul>
+                  <Link to="/menu" className="btn-primary inline-flex items-center gap-2">
+                    Explore Full Menu
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
+                <div className="relative">
+                  <div className="text-9xl mb-4">🍽️</div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-slate-800/60 p-4 rounded-2xl text-center">
+                      <div className="text-4xl mb-2">🥩</div>
+                      <p className="text-sm text-slate-400">Premium Meats</p>
+                    </div>
+                    <div className="bg-slate-800/60 p-4 rounded-2xl text-center">
+                      <div className="text-4xl mb-2">🥗</div>
+                      <p className="text-sm text-slate-400">Fresh Salads</p>
+                    </div>
+                    <div className="bg-slate-800/60 p-4 rounded-2xl text-center">
+                      <div className="text-4xl mb-2">🍜</div>
+                      <p className="text-sm text-slate-400">Authentic Asian</p>
+                    </div>
+                    <div className="bg-slate-800/60 p-4 rounded-2xl text-center">
+                      <div className="text-4xl mb-2">🍰</div>
+                      <p className="text-sm text-slate-400">Decadent Desserts</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="relative px-6 pb-20">
+        <div className="max-w-3xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in" style={{ animationDelay: "0.3s" }}>
+            {stats.map((stat, i) => (
+              <div key={i} className="bg-slate-800/60 p-5 text-center group hover:bg-slate-700/60 transition-all duration-300">
+                <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} mx-auto mb-3 flex items-center justify-center shadow-lg opacity-80`}>
+                  <stat.icon className="w-5 h-5 text-white" />
+                </div>
+                <p className="text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-xs text-slate-500 mt-1">{stat.label}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -192,7 +315,7 @@ const HomePage = () => {
               <p className="mt-4 text-slate-400">Loading reviews...</p>
             </div>
           ) : feedback.length === 0 ? (
-            <div className="glass-card p-12 text-center">
+            <div className="bg-slate-900/80 p-12 text-center border border-amber-500/30">
               <MessageSquare className="w-16 h-16 text-slate-600 mx-auto mb-4" />
               <p className="text-lg font-medium text-slate-400">No reviews yet</p>
               <p className="text-sm text-slate-600 mt-1">Be the first to share your experience!</p>
@@ -202,7 +325,7 @@ const HomePage = () => {
               {feedback.slice(0, 6).map((item, index) => (
                 <div
                   key={item.id || index}
-                  className="glass-subtle p-6 rounded-2xl hover:bg-white/[0.06] transition-all duration-300"
+                  className="bg-slate-800/60 p-6 rounded-2xl hover:bg-slate-700/60 transition-all duration-300"
                 >
                   {/* Rating */}
                   <div className="flex items-center gap-1 mb-4">
@@ -258,94 +381,6 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Signature Dishes Section */}
-      <section className="relative px-6 pb-20">
-        <div className="max-w-6xl mx-auto">
-          <div className="glass rounded-3xl p-10 md:p-16 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-500/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
-
-            <div className="relative">
-              <div className="grid md:grid-cols-2 gap-12 items-center">
-                <div>
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-6 heading-elegant">
-                    Our <span className="gradient-text">Signature</span> Creations
-                  </h2>
-                  <p className="text-lg text-slate-400 mb-8 leading-relaxed">
-                    Discover dishes that have earned us recognition from food critics and loyal customers alike. Each signature dish is a masterpiece of flavor, presentation, and innovation.
-                  </p>
-                  <ul className="space-y-4 mb-8">
-                    <li className="flex items-start gap-3">
-                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
-                      <span className="text-slate-300">Grilled Salmon with Lemon Herb Butter</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
-                      <span className="text-slate-300">Truffle Infused Risotto with Wild Mushrooms</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
-                      <span className="text-slate-300">Wagyu Beef Burger with Caramelized Onions</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="w-2 h-2 rounded-full bg-brand-500 mt-2 flex-shrink-0" />
-                      <span className="text-slate-300">Chocolate Lava Cake with Vanilla Ice Cream</span>
-                    </li>
-                  </ul>
-                  <Link to="/menu" className="btn-primary inline-flex items-center gap-2">
-                    Explore Full Menu
-                    <ArrowRight className="w-5 h-5" />
-                  </Link>
-                </div>
-                <div className="relative">
-                  <div className="text-9xl mb-4">🍽️</div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="glass-subtle p-4 rounded-2xl text-center">
-                      <div className="text-4xl mb-2">🥩</div>
-                      <p className="text-sm text-slate-400">Premium Meats</p>
-                    </div>
-                    <div className="glass-subtle p-4 rounded-2xl text-center">
-                      <div className="text-4xl mb-2">🥗</div>
-                      <p className="text-sm text-slate-400">Fresh Salads</p>
-                    </div>
-                    <div className="glass-subtle p-4 rounded-2xl text-center">
-                      <div className="text-4xl mb-2">🍜</div>
-                      <p className="text-sm text-slate-400">Authentic Asian</p>
-                    </div>
-                    <div className="glass-subtle p-4 rounded-2xl text-center">
-                      <div className="text-4xl mb-2">🍰</div>
-                      <p className="text-sm text-slate-400">Decadent Desserts</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Banner - Only visible after login */}
-      {isAuthenticated && (
-        <section className="px-6 pb-10">
-          <div className="max-w-5xl mx-auto glass rounded-3xl p-10 md:p-16 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-500/5 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl" />
-
-            <div className="relative">
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight mb-4 heading-elegant">
-                Ready to <span className="gradient-text">Dine?</span>
-              </h2>
-              <p className="text-slate-400 max-w-xl mx-auto mb-8">
-                Reserve your table now and experience the magic of AI-powered dining.
-              </p>
-              <Link to="/reservations" className="btn-primary inline-flex items-center gap-2 text-lg">
-                <CalendarDays className="w-5 h-5" />
-                Book a Table
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
     </div>
   );
 };

@@ -22,7 +22,7 @@ const TopRatedSuggestions = () => {
 
   if (status === 'loading') {
     return (
-      <div className="glass-subtle p-8 rounded-2xl">
+      <div className="bg-slate-800/60 p-8 rounded-2xl">
         <div className="flex items-center justify-center gap-2">
           <div className="w-6 h-6 border-2 border-brand-400 border-t-transparent rounded-full animate-spin" />
           <span className="text-slate-400">Loading recommendations...</span>
@@ -56,7 +56,7 @@ const TopRatedSuggestions = () => {
           <Link
             key={item.menuItemId}
             to={`/menu`}
-            className="glass-subtle rounded-2xl overflow-hidden group hover:bg-white/[0.08] transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+            className="bg-slate-800/60 rounded-2xl overflow-hidden group hover:bg-slate-700/60 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl border border-white/10"
           >
             {/* Image */}
             <div className="relative h-32 overflow-hidden">

@@ -55,6 +55,9 @@ export default {
         'bounce-subtle': 'bounceSoft 1s ease-in-out infinite',
         'typing-dot': 'typingDot 1.4s ease-in-out infinite',
         'spin-slow': 'spin 3s linear infinite',
+        'gradient-shift': 'gradientShift 10s ease-in-out infinite',
+        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'swing': 'swing 4s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -96,6 +99,14 @@ export default {
         typingDot: {
           '0%, 60%, 100%': { opacity: '0.3', transform: 'translateY(0)' },
           '30%': { opacity: '1', transform: 'translateY(-4px)' },
+        },
+        gradientShift: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        swing: {
+          '0%, 100%': { transform: 'rotate(-5deg)' },
+          '50%': { transform: 'rotate(5deg)' },
         },
       },
       backgroundImage: {

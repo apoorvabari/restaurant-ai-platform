@@ -5,12 +5,12 @@ import { Package, ChevronDown, ChevronUp, Clock, CheckCircle, Truck, UtensilsCro
 import SkeletonLoader from "./SkeletonLoader";
 
 const statusConfig = {
-  PLACED: { color: "text-blue-400 bg-blue-500/10 border-blue-500/20", icon: Clock, label: "Placed", step: 0 },
-  CONFIRMED: { color: "text-amber-400 bg-amber-500/10 border-amber-500/20", icon: CheckCircle, label: "Confirmed", step: 1 },
-  PREPARING: { color: "text-brand-400 bg-brand-500/10 border-brand-500/20", icon: UtensilsCrossed, label: "Preparing", step: 2 },
-  READY: { color: "text-green-400 bg-green-500/10 border-green-500/20", icon: Package, label: "Ready", step: 3 },
-  DELIVERED: { color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20", icon: Truck, label: "Delivered", step: 4 },
-  CANCELLED: { color: "text-red-400 bg-red-500/10 border-red-500/20", icon: AlertCircle, label: "Cancelled", step: -1 },
+  PLACED: { color: "text-amber-400 bg-amber-900/30 border-amber-700/50", icon: Clock, label: "Placed", step: 0 },
+  CONFIRMED: { color: "text-yellow-400 bg-yellow-900/30 border-yellow-700/50", icon: CheckCircle, label: "Confirmed", step: 1 },
+  PREPARING: { color: "text-orange-400 bg-orange-900/30 border-orange-700/50", icon: UtensilsCrossed, label: "Preparing", step: 2 },
+  READY: { color: "text-amber-300 bg-amber-900/30 border-amber-700/50", icon: Package, label: "Ready", step: 3 },
+  DELIVERED: { color: "text-yellow-300 bg-yellow-900/30 border-yellow-700/50", icon: Truck, label: "Delivered", step: 4 },
+  CANCELLED: { color: "text-red-400 bg-red-900/30 border-red-700/50", icon: AlertCircle, label: "Cancelled", step: -1 },
 };
 
 const steps = ["Placed", "Confirmed", "Preparing", "Ready", "Delivered"];
@@ -29,18 +29,18 @@ const StatusTimeline = ({ currentStatus }) => {
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
                 i <= activeStep
-                  ? "bg-brand-500 text-white shadow-lg shadow-brand-500/30"
-                  : "bg-white/5 border border-white/10 text-slate-600"
-              } ${i === activeStep ? "animate-pulse-glow ring-2 ring-brand-500/30" : ""}`}
+                  ? "bg-amber-500 text-amber-950 shadow-lg shadow-amber-500/30"
+                  : "bg-amber-900/50 border border-amber-700 text-amber-500"
+              } ${i === activeStep ? "animate-pulse-glow ring-2 ring-amber-500/30" : ""}`}
             >
               {i < activeStep ? "✓" : i + 1}
             </div>
-            <span className={`text-[10px] mt-1.5 font-medium ${i <= activeStep ? "text-brand-400" : "text-slate-600"}`}>
+            <span className={`text-[10px] mt-1.5 font-medium ${i <= activeStep ? "text-amber-300" : "text-amber-500"}`}>
               {step}
             </span>
           </div>
           {i < steps.length - 1 && (
-            <div className={`flex-1 h-0.5 rounded-full mb-5 ${i < activeStep ? "bg-brand-500" : "bg-white/5"}`} />
+            <div className={`flex-1 h-0.5 rounded-full mb-5 ${i < activeStep ? "bg-amber-500" : "bg-amber-900/50"}`} />
           )}
         </React.Fragment>
       ))}
@@ -74,25 +74,25 @@ const OrderTracker = ({ isAdmin = false, onUpdateStatus = null }) => {
 
   if (status === "failed") {
     return (
-      <div className="glass-card p-12 text-center">
-        <Clock className="w-12 h-12 text-brand-400 mx-auto mb-6" />
+      <div className="bg-gray-950/70 p-12 text-center border border-gray-700/50 rounded-3xl">
+        <Clock className="w-12 h-12 text-amber-500 mx-auto mb-6" />
         <blockquote className="text-xl md:text-2xl font-medium text-white mb-4 heading-elegant">
           "Food is not just eating energy. It's an experience."
         </blockquote>
-        <cite className="text-slate-400">— Ferran Adrià</cite>
-        <p className="text-sm text-slate-500 mt-6">Unable to load orders at the moment. Please try again later.</p>
+        <cite className="text-gray-300">— Ferran Adrià</cite>
+        <p className="text-sm text-gray-400 mt-6">Unable to load orders at the moment. Please try again later.</p>
       </div>
     );
   }
 
   if (list.length === 0) {
     return (
-      <div className="glass-card p-12 text-center">
-        <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-          <Package className="w-7 h-7 text-slate-600" />
+      <div className="bg-gray-950/70 p-12 text-center border border-gray-700/50 rounded-3xl">
+        <div className="w-16 h-16 rounded-full bg-gray-900/50 flex items-center justify-center mx-auto mb-4">
+          <Package className="w-7 h-7 text-amber-500" />
         </div>
-        <p className="text-lg font-medium text-slate-400">No orders yet</p>
-        <p className="text-sm text-slate-600 mt-1">Explore our menu and place your first order!</p>
+        <p className="text-lg font-medium text-white">No orders yet</p>
+        <p className="text-sm text-gray-400 mt-1">Explore our menu and place your first order!</p>
       </div>
     );
   }
@@ -105,11 +105,11 @@ const OrderTracker = ({ isAdmin = false, onUpdateStatus = null }) => {
         const isExpanded = expandedOrder === order.orderId;
 
         return (
-          <div key={order.orderId} className="glass-card rounded-2xl overflow-hidden">
+          <div key={order.orderId} className="bg-gray-900/50 rounded-2xl overflow-hidden border border-gray-700/50">
             {/* Header */}
             <button
               onClick={() => setExpandedOrder(isExpanded ? null : order.orderId)}
-              className="w-full p-5 flex items-center justify-between text-left hover:bg-white/[0.02] transition-colors"
+              className="w-full p-5 flex items-center justify-between text-left hover:bg-gray-800/50 transition-colors"
             >
               <div className="flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${conf.color}`}>
@@ -117,7 +117,7 @@ const OrderTracker = ({ isAdmin = false, onUpdateStatus = null }) => {
                 </div>
                 <div>
                   <h4 className="text-sm font-semibold text-white">Order #{order.orderId}</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-gray-400/70 mt-0.5">
                     {new Date(order.orderTime).toLocaleDateString("en-IN", {
                       day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
                     })}
@@ -127,10 +127,10 @@ const OrderTracker = ({ isAdmin = false, onUpdateStatus = null }) => {
 
               <div className="flex items-center gap-4">
                 <span className={`status-badge border ${conf.color}`}>{conf.label}</span>
-                <span className="text-lg font-bold gradient-text">₹{order.totalAmount?.toFixed(2)}</span>
+                <span className="text-lg font-bold text-amber-400">₹{order.totalAmount?.toFixed(2)}</span>
                 <button
                   onClick={(e) => handleDelete(order.orderId || order.id, e)}
-                  className="p-2 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors"
+                  className="p-2 rounded-lg hover:bg-red-900/30 text-gray-400 hover:text-red-400 transition-colors"
                   title="Delete order"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -165,37 +165,37 @@ const OrderTracker = ({ isAdmin = false, onUpdateStatus = null }) => {
                     </button>
                   </div>
                 )}
-                {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
+                {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
               </div>
             </button>
 
             {/* Expanded Details */}
             {isExpanded && (
-              <div className="px-5 pb-5 border-t border-white/5 pt-4 animate-fade-in">
+              <div className="px-5 pb-5 border-t border-gray-700/30 pt-4 animate-fade-in">
                 {/* Delivered Success Message */}
                 {order.status === 'DELIVERED' && (
-                  <div className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center gap-3 animate-fade-in">
-                    <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <div className="mb-4 p-4 bg-amber-900/30 border border-amber-700/50 rounded-xl flex items-center gap-3 animate-fade-in">
+                    <div className="w-10 h-10 rounded-full bg-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/30">
                       <PartyPopper className="w-5 h-5 text-white" />
                     </div>
                     <div>
-                      <p className="text-emerald-400 font-bold text-sm">Order Delivered!</p>
-                      <p className="text-emerald-400/70 text-xs">Your order has been successfully delivered. Enjoy your meal!</p>
+                      <p className="text-amber-400 font-bold text-sm">Order Delivered!</p>
+                      <p className="text-amber-400/70 text-xs">Your order has been successfully delivered. Enjoy your meal!</p>
                     </div>
                   </div>
                 )}
                 <StatusTimeline currentStatus={order.status} />
 
                 <div className="mt-5 space-y-2">
-                  <h5 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Items</h5>
+                  <h5 className="text-xs font-semibold text-gray-400/70 uppercase tracking-wider">Items</h5>
                   {order.items?.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                    <div key={i} className="flex justify-between items-center py-2 border-b border-gray-700/20 last:border-0">
                       <div className="flex items-center gap-3">
                         <span className="text-lg">🍛</span>
-                        <span className="text-sm text-slate-300">{item.itemName}</span>
+                        <span className="text-sm text-white">{item.itemName}</span>
                       </div>
-                      <div className="text-sm text-slate-400">
-                        × {item.quantity} — <span className="text-brand-400">₹{item.price}</span>
+                      <div className="text-sm text-gray-300">
+                        × {item.quantity} — <span className="text-amber-400">₹{item.price}</span>
                       </div>
                     </div>
                   ))}

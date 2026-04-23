@@ -55,19 +55,19 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 transition-all duration-500 ${
         scrolled
-          ? "bg-black/90 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
-          : "bg-black/60 backdrop-blur-lg border-b border-white/5"
+          ? "bg-amber-950/90 backdrop-blur-xl border-b border-amber-800/30 shadow-lg shadow-amber-900/20"
+          : "bg-amber-950/60 backdrop-blur-lg border-b border-amber-800/20"
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 bg-gradient-to-br from-brand-500 to-accent-500 rounded-xl flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-shadow duration-300">
+          <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-shadow duration-300">
             <ChefHat className="w-5 h-5 text-white" />
           </div>
           <div>
             <h1 className="text-xl font-black tracking-tight text-white leading-none heading-elegant">APOORVA</h1>
-            <p className="text-[10px] font-medium text-brand-400 tracking-[0.2em]">RESTAURANT</p>
+            <p className="text-[10px] font-medium text-amber-400 tracking-[0.2em]">RESTAURANT</p>
           </div>
         </Link>
 
@@ -79,13 +79,13 @@ const Navbar = () => {
               to={link.to}
               className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
                 isActive(link.to)
-                  ? "text-brand-400 bg-brand-500/10"
+                  ? "text-amber-400 bg-amber-500/10"
                   : "text-slate-300 hover:text-white hover:bg-white/5"
               }`}
             >
               {link.label}
               {isActive(link.to) && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-400 rounded-full" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-400 rounded-full" />
               )}
             </Link>
           ))}
@@ -95,29 +95,16 @@ const Navbar = () => {
               to={link.to}
               className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
                 isActive(link.to)
-                  ? "text-brand-400 bg-brand-500/10"
+                  ? "text-amber-400 bg-amber-500/10"
                   : "text-slate-300 hover:text-white hover:bg-white/5"
               }`}
             >
               {link.label}
               {isActive(link.to) && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand-400 rounded-full" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-400 rounded-full" />
               )}
             </Link>
           ))}
-          {isAuthenticated && (
-            <Link
-              to="/dashboard"
-              className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-1.5 ${
-                isActive("/dashboard")
-                  ? "text-brand-400 bg-brand-500/10"
-                  : "text-slate-300 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              Dashboard
-            </Link>
-          )}
           {isAuthenticated && isAdmin && (
             <Link
               to="/admin"
@@ -143,7 +130,7 @@ const Navbar = () => {
           >
             <ShoppingCart className="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" />
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-brand-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-scale-in shadow-lg shadow-brand-500/50">
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-scale-in shadow-lg shadow-amber-500/50">
                 {cartCount}
               </span>
             )}
@@ -163,15 +150,15 @@ const Navbar = () => {
               </Link>
               <Link
                 to="/register"
-                className="px-4 py-2 bg-gradient-to-r from-brand-500 to-accent-500 hover:from-brand-600 hover:to-accent-600 rounded-xl font-semibold text-sm text-white shadow-lg shadow-brand-500/20 hover:shadow-brand-500/40 transition-all duration-300"
+                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-green-600 hover:from-amber-600 hover:to-green-700 rounded-xl font-semibold text-sm text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all duration-300"
               >
                 Register
               </Link>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-3">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-brand-500/10 to-accent-500/10 border border-brand-500/20">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center text-white text-xs font-bold">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-green-600/10 border border-amber-500/20">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-green-600 flex items-center justify-center text-white text-xs font-bold">
                   {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
                 </div>
                 <span className="text-sm font-medium text-white">
@@ -205,7 +192,7 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/10 bg-black/95 backdrop-blur-xl animate-fade-in">
+        <div className="md:hidden border-t border-white/10 bg-amber-950/95 backdrop-blur-xl animate-fade-in">
           <div className="px-6 py-4 space-y-1">
             {navLinks.map((link) => (
               <Link
@@ -213,7 +200,7 @@ const Navbar = () => {
                 to={link.to}
                 className={`block px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   isActive(link.to)
-                    ? "text-brand-400 bg-brand-500/10"
+                    ? "text-amber-400 bg-amber-500/10"
                     : "text-slate-300 hover:text-white hover:bg-white/5"
                 }`}
               >
@@ -226,21 +213,13 @@ const Navbar = () => {
                 to={link.to}
                 className={`block px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                   isActive(link.to)
-                    ? "text-brand-400 bg-brand-500/10"
+                    ? "text-amber-400 bg-amber-500/10"
                     : "text-slate-300 hover:text-white hover:bg-white/5"
                 }`}
               >
                 {link.label}
               </Link>
             ))}
-            {isAuthenticated && (
-              <Link
-                to="/dashboard"
-                className="block px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-white hover:bg-white/5"
-              >
-                Dashboard
-              </Link>
-            )}
             {isAuthenticated && isAdmin && (
               <Link
                 to="/admin"
@@ -258,8 +237,8 @@ const Navbar = () => {
                   <span className="text-sm text-slate-500">Not logged in</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-brand-500/10 to-accent-500/10 border border-brand-500/20">
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center text-white text-xs font-bold">
+                <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 to-green-600/10 border border-amber-500/20">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-green-600 flex items-center justify-center text-white text-xs font-bold">
                     {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                   <span className="text-sm font-medium text-white">
@@ -271,7 +250,7 @@ const Navbar = () => {
                 {!isAuthenticated ? (
                   <>
                     <Link to="/login" className="flex-1 text-center py-3 text-sm font-medium rounded-xl border border-white/10 text-white hover:bg-white/5">Login</Link>
-                    <Link to="/register" className="flex-1 text-center py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-brand-500 to-accent-500 text-white">Register</Link>
+                    <Link to="/register" className="flex-1 text-center py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-amber-500 to-green-600 text-white">Register</Link>
                   </>
                 ) : (
                   <button onClick={handleLogout} className="w-full py-3 text-sm font-medium text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/10">

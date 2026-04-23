@@ -22,10 +22,14 @@ const CartSidebar = () => {
   const total = useSelector(selectCartTotal);
   const isOpen = useSelector(selectIsCartOpen);
   const isPaymentModalOpen = useSelector(selectIsPaymentModalOpen);
-  const { token } = useSelector((state) => state.auth);
+  const { token, isAuthenticated } = useSelector((state) => state.auth);
+
+  // Only show cart items if user is authenticated
+  const displayItems = isAuthenticated ? items : [];
+  const displayTotal = isAuthenticated ? total : 0;
 
   const handlePlaceOrder = () => {
-    if (!token) {
+    if (!isAuthenticated) {
       alert("Please login to place an order.");
       return;
     }
@@ -80,7 +84,7 @@ const CartSidebar = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Your Cart</h2>
-              <p className="text-xs text-slate-500">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+              <p className="text-xs text-slate-500">{displayItems.length} item{displayItems.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
           <button
@@ -93,7 +97,15 @@ const CartSidebar = () => {
 
         {/* Items */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {items.length === 0 ? (
+          {!isAuthenticated ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
+                <ShoppingBag className="w-8 h-8 text-slate-600" />
+              </div>
+              <p className="text-slate-400 font-medium">Please login to view your cart</p>
+              <p className="text-sm text-slate-600 mt-1">Sign in to see your items and place orders</p>
+            </div>
+          ) : displayItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-4">
                 <ShoppingBag className="w-8 h-8 text-slate-600" />
@@ -102,10 +114,10 @@ const CartSidebar = () => {
               <p className="text-sm text-slate-600 mt-1">Add dishes from our menu to get started</p>
             </div>
           ) : (
-            items.map((item) => (
+            displayItems.map((item) => (
               <div
                 key={item.id}
-                className="glass-card p-4 flex items-center gap-4"
+                className="bg-slate-800/60 p-4 flex items-center gap-4 border border-white/10"
               >
                 {/* Food icon */}
                 <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-brand-500/20 to-accent-500/10 flex items-center justify-center text-2xl flex-shrink-0">
@@ -148,11 +160,11 @@ const CartSidebar = () => {
         </div>
 
         {/* Footer */}
-        {items.length > 0 && (
+        {isAuthenticated && displayItems.length > 0 && (
           <div className="p-6 border-t border-white/10 space-y-4">
             <div className="flex justify-between items-center">
               <span className="text-slate-400 font-medium">Total</span>
-              <span className="text-2xl font-bold gradient-text">₹{total.toFixed(2)}</span>
+              <span className="text-2xl font-bold gradient-text">₹{displayTotal.toFixed(2)}</span>
             </div>
             <button
               onClick={handlePlaceOrder}
