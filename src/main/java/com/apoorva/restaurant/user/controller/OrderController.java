@@ -65,8 +65,8 @@ public class OrderController {
             Long userId = extractUserId(authentication);
             OrderResponse order = orderService.getOrderById(orderId);
             
-            // Verify user owns the order
-            if (!userId.equals(order.getUserId())) {
+            // Verify user owns the order (skip for unauthenticated users)
+            if (userId != null && !userId.equals(order.getUserId())) {
                 throw new RuntimeException("You can only view your own orders");
             }
             
@@ -83,8 +83,8 @@ public class OrderController {
             Long userId = extractUserId(authentication);
             OrderResponse order = orderService.getOrderById(orderId);
             
-            // Verify user owns the order
-            if (!userId.equals(order.getUserId())) {
+            // Verify user owns the order (skip for unauthenticated users)
+            if (userId != null && !userId.equals(order.getUserId())) {
                 throw new RuntimeException("You can only delete your own orders");
             }
             
@@ -98,12 +98,12 @@ public class OrderController {
 
     private Long extractUserId(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
+            return null; // Return null for unauthenticated users
         }
 
         String username = authentication.getName();
         if (username == null || username.isEmpty() || "anonymousUser".equals(username)) {
-            throw new RuntimeException("User not authenticated");
+            return null; // Return null for anonymous users
         }
 
         try {
@@ -111,8 +111,8 @@ public class OrderController {
         } catch (NumberFormatException e) {
             logger.warn("Username is not a numeric ID, looking up by email: {}", username);
             User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found with email: " + username));
-            return user.getId();
+                    .orElse(null); // Return null if user not found
+            return user != null ? user.getId() : null;
         }
     }
 }

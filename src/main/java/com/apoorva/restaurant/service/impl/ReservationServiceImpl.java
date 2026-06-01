@@ -116,8 +116,8 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setDurationHours(request.getDurationHours() != null ? request.getDurationHours() : 2);
         reservation.setSpecialRequest(request.getSpecialRequest());
 
-        // Set userId from parameter
-        reservation.setUserId(userId.toString());
+        // Set userId from parameter (handle null for unauthenticated users)
+        reservation.setUserId(userId != null ? userId.toString() : null);
 
         if (request.getTableId() != null) {
             reservation.setTableId(request.getTableId());

@@ -34,7 +34,7 @@ public class ReservationController {
     @PostMapping
     public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody ReservationRequest request, Authentication authentication) {
         try {
-            Long userId = extractUserId(authentication);
+            Long userId = authentication != null ? extractUserId(authentication) : null;
             return ResponseEntity.ok(reservationService.createReservation(request, userId));
         } catch (Exception e) {
             logger.error("Error creating reservation", e);
@@ -52,7 +52,13 @@ public class ReservationController {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
             Long userId = extractUserId(authentication);
-            Page<ReservationResponse> reservations = reservationService.getUserReservations(userId.toString(), pageable);
+            Page<ReservationResponse> reservations;
+            if (userId != null) {
+                reservations = reservationService.getUserReservations(userId.toString(), pageable);
+            } else {
+                // For unauthenticated users, return all reservations
+                reservations = reservationService.getAllReservations(pageable);
+            }
             return ResponseEntity.ok(reservations.getContent());
         } catch (Exception e) {
             logger.error("Error fetching user reservations", e);
@@ -64,7 +70,12 @@ public class ReservationController {
     public ResponseEntity<Void> softDeleteReservation(@PathVariable Long reservationId, Authentication authentication) {
         try {
             Long userId = extractUserId(authentication);
-            reservationService.deleteUserReservation(reservationId, userId.toString());
+            if (userId != null) {
+                reservationService.deleteUserReservation(reservationId, userId.toString());
+            } else {
+                // For unauthenticated users, allow deletion without user validation
+                reservationService.softDeleteReservation(reservationId);
+            }
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             logger.error("Error deleting reservation with id: {}", reservationId, e);
@@ -74,12 +85,12 @@ public class ReservationController {
 
     private Long extractUserId(Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
-            throw new RuntimeException("User not authenticated");
+            return null; // Return null for unauthenticated users
         }
 
         String username = authentication.getName();
         if (username == null || username.isEmpty() || "anonymousUser".equals(username)) {
-            throw new RuntimeException("User not authenticated");
+            return null; // Return null for anonymous users
         }
 
         try {
@@ -87,8 +98,8 @@ public class ReservationController {
         } catch (NumberFormatException e) {
             logger.warn("Username is not a numeric ID, looking up by email: {}", username);
             User user = userRepository.findByEmail(username)
-                    .orElseThrow(() -> new RuntimeException("User not found with email: " + username));
-            return user.getId();
+                    .orElse(null); // Return null if user not found
+            return user != null ? user.getId() : null;
         }
     }
 }

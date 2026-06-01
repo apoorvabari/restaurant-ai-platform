@@ -29,4 +29,11 @@ public class TestController {
         List<MenuItem> items = menuItemRepository.findAll();
         return "Menu items count: " + items.size();
     }
+
+    @GetMapping("/test/auth-info")
+    @PreAuthorize("permitAll()")
+    public Object authInfo(org.springframework.security.core.Authentication auth) {
+        if (auth == null) return "No auth";
+        return auth.getAuthorities();
+    }
 }

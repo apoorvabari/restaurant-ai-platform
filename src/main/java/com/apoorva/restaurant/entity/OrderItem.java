@@ -1,9 +1,9 @@
 package com.apoorva.restaurant.entity;
 
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
@@ -20,6 +20,8 @@ public class OrderItem {
     @ManyToOne
     @JoinColumn(name = "order_id", nullable = false)
     @JsonBackReference
+    @lombok.EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
     private Order order;
 
     @ManyToOne

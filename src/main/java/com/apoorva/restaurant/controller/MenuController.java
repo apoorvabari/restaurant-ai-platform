@@ -9,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/menu")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 @SuppressWarnings("null")
 public class MenuController {
 
@@ -111,6 +111,7 @@ public class MenuController {
                         "https://images.pexels.com/photos/15014918/pexels-photo-15014918.jpeg"),
                 createMenuItem("Cold Coffee", "DRK020", "Chilled coffee blended with milk and ice cream", 150.00,
                         "Beverage", "https://images.pexels.com/photos/2374795/pexels-photo-2374795.jpeg"));
+
 
         menuItemRepository.saveAll(items);
         return ResponseEntity.ok("Menu items initialized successfully with " + items.size() + " items.");

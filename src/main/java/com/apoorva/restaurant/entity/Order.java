@@ -3,7 +3,6 @@ package com.apoorva.restaurant.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
@@ -16,7 +15,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @SQLRestriction("deleted = false")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Order {
 
     @Id
@@ -25,6 +23,8 @@ public class Order {
 
     @Column(nullable = false)
     private Long userId;
+
+    private String customerName;
 
     @Column(nullable = false)
     private Double totalAmount;
@@ -39,7 +39,14 @@ public class Order {
 
     @JsonManagedReference
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @lombok.EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
     private List<OrderItem> orderItems = new ArrayList<>();
+
+    public void addOrderItem(OrderItem item) {
+        orderItems.add(item);
+        item.setOrder(this);
+    }
 
     public enum OrderStatus {
         PENDING,

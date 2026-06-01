@@ -2,12 +2,12 @@ package com.apoorva.restaurant.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -15,28 +15,44 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 @Configuration
-@Profile("!local")
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // Disable CSRF for stateless JWT API
             .csrf(csrf -> csrf.disable())
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            // Enable CORS using the bean defined below
+            .cors(org.springframework.security.config.Customizer.withDefaults())
+            // Authorize requests
             .authorizeHttpRequests(auth -> auth
-                // Public endpoints
+                // Permit pre‑flight OPTIONS requests without authentication
+                .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+                // Public endpoints (adjust as needed)
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/menu/**").permitAll()
-                .requestMatchers("/api/ai/**").permitAll()   // allow AI endpoints
-                .requestMatchers("/api/reservations/**").permitAll() // allow reservations
+                .requestMatchers("/api/menu-ratings/**").permitAll()
+                .requestMatchers("/api/ai/**").permitAll()
+                .requestMatchers("/api/reservations/**").permitAll()
                 .requestMatchers("/api/tables/**").permitAll()
-                .requestMatchers("/api/v1/user/feedback").permitAll()
+                .requestMatchers("/api/orders/**").permitAll()
                 .requestMatchers("/api/admin/create-feedback-table").permitAll()
                 .requestMatchers("/api/admin/reset-table-status").permitAll()
-                .requestMatchers("/api/orders/**").authenticated()   // orders need login
-                .anyRequest().authenticated()
+                .requestMatchers("/api/v1/user/**").permitAll()
+                // All other /api/** endpoints require authentication
+                .requestMatchers("/api/**").authenticated()
+                .anyRequest().permitAll()
             )
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            // Stateless session – no HttpSession will be created
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // Add our JWT filter before Spring's authentication filter
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -44,7 +60,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "http://localhost:5176"));
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

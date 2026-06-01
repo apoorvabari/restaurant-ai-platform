@@ -4,6 +4,7 @@ import com.apoorva.restaurant.config.JwtUtil;
 import com.apoorva.restaurant.dto.AuthRequest;
 import com.apoorva.restaurant.dto.AuthResponse;
 import com.apoorva.restaurant.service.UserService;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

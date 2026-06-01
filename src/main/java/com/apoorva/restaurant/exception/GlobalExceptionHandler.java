@@ -148,8 +148,9 @@ public class GlobalExceptionHandler {
         logger.error("Unexpected error: {}", ex.getMessage(), ex);
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "An unexpected error occurred. Please try again later.");
+        body.put("message", ex.getMessage()); // Show actual error message for debugging
         body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+        body.put("errorType", ex.getClass().getSimpleName());
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -7,8 +7,10 @@ import com.apoorva.restaurant.dto.OrderResponse;
 import com.apoorva.restaurant.entity.MenuItem;
 import com.apoorva.restaurant.entity.Order;
 import com.apoorva.restaurant.entity.OrderItem;
+import com.apoorva.restaurant.entity.User;
 import com.apoorva.restaurant.repository.MenuItemRepository;
 import com.apoorva.restaurant.repository.OrderRepository;
+import com.apoorva.restaurant.repository.UserRepository;
 import com.apoorva.restaurant.service.OrderService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,20 +24,33 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final MenuItemRepository menuItemRepository;
+    private final UserRepository userRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, MenuItemRepository menuItemRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository, MenuItemRepository menuItemRepository, UserRepository userRepository) {
         this.orderRepository = orderRepository;
         this.menuItemRepository = menuItemRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     @Transactional
     public OrderResponse placeOrder(Long userId, OrderRequest orderRequest) {
         Order order = new Order();
-        order.setUserId(userId);
+        // Use default user ID (1) for unauthenticated users to avoid null constraint
+        order.setUserId(userId != null ? userId : 1L);
+        // Set customer name: use user's email if authenticated, otherwise use request customer name
+        if (userId != null) {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user != null) {
+                order.setCustomerName(user.getEmail());
+            } else {
+                order.setCustomerName(orderRequest.getCustomerName());
+            }
+        } else {
+            order.setCustomerName(orderRequest.getCustomerName());
+        }
         order.setStatus(Order.OrderStatus.PENDING);
 
-        List<OrderItem> orderItems = new ArrayList<>();
         double totalAmount = 0.0;
 
         for (OrderItemRequest itemReq : orderRequest.getItems()) {
@@ -48,11 +63,10 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setQuantity(itemReq.getQuantity());
             orderItem.setPrice(menuItem.getPrice());
 
-            orderItems.add(orderItem);
+            order.addOrderItem(orderItem);
             totalAmount += menuItem.getPrice() * itemReq.getQuantity();
         }
 
-        order.setOrderItems(orderItems);
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
@@ -61,7 +75,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getOrdersByUserId(Long userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
+        List<Order> orders;
+        if (userId != null) {
+            orders = orderRepository.findByUserId(userId);
+        } else {
+            // For unauthenticated users, return empty list or all orders
+            orders = orderRepository.findAll(); // or return new ArrayList<>();
+        }
         return orders.stream().map(this::convertToResponse).toList();
     }
 
@@ -114,6 +134,7 @@ public class OrderServiceImpl implements OrderService {
         return new OrderResponse(
                 order.getId(),
                 order.getUserId(),
+                order.getCustomerName(),
                 order.getTotalAmount(),
                 order.getStatus(),
                 order.getOrderTime(),
