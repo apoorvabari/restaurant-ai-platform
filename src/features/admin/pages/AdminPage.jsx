@@ -10,6 +10,16 @@ function AdminPage() {
   const [tables, setTables] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [newMenu, setNewMenu] = useState({
+    itemName: '',
+    itemCode: '',
+    category: '',
+    price: '',
+    description: '',
+    imageUrl: '',
+    available: true
+  });
+  const [showAddMenu, setShowAddMenu] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'dashboard') fetchStats();
@@ -85,19 +95,33 @@ function AdminPage() {
     }
   };
 
-  const addMenuItem = async (item) => {
+  const addMenuItem = async (e) => {
+    e.preventDefault();
     try {
-      await axios.post('http://localhost:8080/api/menu', item);
+      await axios.post('http://localhost:8080/api/menu', newMenu);
       fetchMenuItems();
       fetchStats(); // Refresh stats after addition
+      setShowAddMenu(false);
+      setNewMenu({ itemName: '', itemCode: '', category: '', price: '', description: '', imageUrl: '', available: true });
     } catch (error) {
       console.error('Error adding menu item:', error);
     }
   };
 
+  const initializeMenuItems = async () => {
+    try {
+      await axios.post('http://localhost:8080/api/menu/initialize');
+      fetchMenuItems();
+      fetchStats();
+      alert('Menu items initialized successfully');
+    } catch (error) {
+      console.error('Error initializing menu items:', error);
+    }
+  };
+
   const fetchOrders = async () => {
     try {
-      const response = await axios.get(`${API_BASE}/orders`);
+      const response = await axios.get(`http://localhost:8080/api/v1/admin/orders`);
       setOrders(response.data);
     } catch (error) {
       console.error('Error fetching orders:', error);
@@ -106,7 +130,7 @@ function AdminPage() {
 
   const updateOrderStatus = async (id, status) => {
     try {
-      await axios.put(`${API_BASE}/orders/${id}/status`, null, { params: { status } });
+      await axios.put(`http://localhost:8080/api/v1/admin/orders/${id}/status`, null, { params: { status } });
       fetchOrders();
     } catch (error) {
       console.error('Error updating order status:', error);
@@ -115,7 +139,7 @@ function AdminPage() {
 
   const deleteOrder = async (id) => {
     try {
-      await axios.delete(`${API_BASE}/orders/${id}`);
+      await axios.delete(`http://localhost:8080/api/v1/admin/orders/${id}`);
       fetchOrders();
       fetchStats(); // Refresh stats after deletion
     } catch (error) {
@@ -413,7 +437,35 @@ function AdminPage() {
         {activeTab === 'menu' && (
           <div className="bg-white rounded-lg shadow">
             <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Menu Items</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold">Menu Items</h2>
+                <div className="flex space-x-2">
+                  <button onClick={initializeMenuItems} className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600">
+                    Initialize Default Menu
+                  </button>
+                  <button onClick={() => setShowAddMenu(!showAddMenu)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                    {showAddMenu ? 'Cancel' : 'Add New Item'}
+                  </button>
+                </div>
+              </div>
+
+              {showAddMenu && (
+                <div className="mb-6 bg-gray-50 p-4 rounded-lg border">
+                  <h3 className="text-lg font-medium mb-3">Add New Menu Item</h3>
+                  <form onSubmit={addMenuItem} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" placeholder="Item Name" required className="border p-2 rounded" value={newMenu.itemName} onChange={e => setNewMenu({...newMenu, itemName: e.target.value})} />
+                    <input type="text" placeholder="Item Code (e.g. PIZ001)" required className="border p-2 rounded" value={newMenu.itemCode} onChange={e => setNewMenu({...newMenu, itemCode: e.target.value})} />
+                    <input type="text" placeholder="Category" required className="border p-2 rounded" value={newMenu.category} onChange={e => setNewMenu({...newMenu, category: e.target.value})} />
+                    <input type="number" step="0.01" placeholder="Price" required className="border p-2 rounded" value={newMenu.price} onChange={e => setNewMenu({...newMenu, price: e.target.value})} />
+                    <input type="text" placeholder="Description" className="border p-2 rounded md:col-span-2" value={newMenu.description} onChange={e => setNewMenu({...newMenu, description: e.target.value})} />
+                    <input type="text" placeholder="Image URL" className="border p-2 rounded md:col-span-2" value={newMenu.imageUrl} onChange={e => setNewMenu({...newMenu, imageUrl: e.target.value})} />
+                    <div className="md:col-span-2">
+                      <button type="submit" className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Save Menu Item</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead className="bg-gray-50">

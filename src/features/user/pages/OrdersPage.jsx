@@ -1,13 +1,13 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrders } from "../../../features/orders/orderSlice";
-import OrderTracker from "../../../components/OrderTracker";
+import OrderStatusTracker from "../../../components/OrderStatusTracker";
 import { Link } from "react-router-dom";
 import { Package, ArrowRight, Sparkles } from "lucide-react";
 
 const OrdersPage = () => {
   const dispatch = useDispatch();
-  const { status } = useSelector((state) => state.orders);
+  const { status, list } = useSelector((state) => state.orders);
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   useEffect(() => {
@@ -234,7 +234,30 @@ const OrdersPage = () => {
         {/* Orders */}
         <div className="animate-fade-in" style={{ animationDelay: "0.1s" }}>
           <div className="bg-stone-900/70 backdrop-blur-md rounded-3xl p-8 border border-amber-700/50 shadow-2xl">
-            <OrderTracker />
+            {status === "loading" ? (
+              <div className="text-center py-12">
+                <div className="inline-block w-8 h-8 border-4 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-amber-200">Loading orders...</p>
+              </div>
+            ) : status === "failed" ? (
+              <div className="text-center py-12">
+                <div className="text-amber-200">Failed to load orders. Please try again.</div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {list.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="w-16 h-16 text-amber-600 mx-auto mb-4" />
+                    <p className="text-lg font-medium text-amber-200">No orders yet</p>
+                    <p className="text-sm text-amber-300 mt-1">Place your first order to get started!</p>
+                  </div>
+                ) : (
+                  list.map((order) => (
+                    <OrderStatusTracker key={order.orderId || order.id} orderId={order.orderId || order.id} />
+                  ))
+                )}
+              </div>
+            )}
           </div>
         </div>
 

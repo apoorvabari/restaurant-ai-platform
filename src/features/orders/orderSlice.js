@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../../api/axiosConfig";
+import { connectWebSocket } from "../../api/websocketService";
 
 // Place a new order
 export const placeOrder = createAsyncThunk("orders/place", async (orderData) => {
@@ -17,6 +18,12 @@ export const fetchOrders = createAsyncThunk("orders/fetchAll", async () => {
 export const deleteOrder = createAsyncThunk("orders/delete", async (orderId) => {
   await axiosInstance.delete(`/v1/user/orders/${orderId}`);
   return orderId;
+});
+
+// Real-time order status update
+export const updateOrderStatusRealTime = createAsyncThunk("orders/updateStatus", async (orderData) => {
+  // This will be called by WebSocket when status changes
+  return orderData;
 });
 
 const orderSlice = createSlice({
@@ -53,6 +60,12 @@ const orderSlice = createSlice({
       })
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.list = state.list.filter(order => order.id !== action.payload);
+      })
+      .addCase(updateOrderStatusRealTime.fulfilled, (state, action) => {
+        const index = state.list.findIndex(order => order.orderId === action.payload.orderId);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
       });
   },
 });

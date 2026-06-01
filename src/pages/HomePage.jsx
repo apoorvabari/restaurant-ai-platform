@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 import MenuList from "../components/MenuList";
 import TopRatedSuggestions from "../components/TopRatedSuggestions";
+import AnimatedPageWrapper from "../components/AnimatedPageWrapper";
 import { fetchFeedback } from "../features/feedback/feedbackSlice";
 import { ArrowRight, Utensils, CalendarDays, Star, Users, ChefHat, MessageSquare, Calendar } from "lucide-react";
 
@@ -24,7 +26,7 @@ const HomePage = () => {
   }, [dispatch]);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-900 via-amber-800 to-green-900">
+    <AnimatedPageWrapper className="relative min-h-screen overflow-hidden bg-gradient-to-br from-amber-900 via-amber-800 to-green-900">
       {/* Forest canopy gradient */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-green-900/40 via-transparent to-amber-900/30" />
@@ -381,7 +383,7 @@ const HomePage = () => {
         </div>
       </section>
 
-    </div>
+    </AnimatedPageWrapper>
   );
 };
 

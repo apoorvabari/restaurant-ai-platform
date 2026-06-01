@@ -1,40 +1,48 @@
 import React from "react";
-
-const SkeletonCard = () => (
-  <div className="skeleton rounded-2xl overflow-hidden">
-    <div className="h-56 bg-white/[0.03]" />
-    <div className="p-6 space-y-3">
-      <div className="flex justify-between">
-        <div className="h-5 w-32 bg-white/[0.06] rounded-lg" />
-        <div className="h-5 w-16 bg-white/[0.06] rounded-lg" />
-      </div>
-      <div className="h-4 w-full bg-white/[0.04] rounded-lg" />
-      <div className="h-4 w-2/3 bg-white/[0.04] rounded-lg" />
-      <div className="h-6 w-20 bg-white/[0.06] rounded-full mt-2" />
-    </div>
-  </div>
-);
-
-const SkeletonRow = () => (
-  <div className="skeleton flex items-center gap-4 p-4">
-    <div className="w-12 h-12 rounded-xl bg-white/[0.06] flex-shrink-0" />
-    <div className="flex-1 space-y-2">
-      <div className="h-4 w-40 bg-white/[0.06] rounded-lg" />
-      <div className="h-3 w-24 bg-white/[0.04] rounded-lg" />
-    </div>
-    <div className="h-6 w-16 bg-white/[0.06] rounded-full" />
-  </div>
-);
+import AnimatedLoader from "./AnimatedLoader";
 
 const SkeletonLoader = ({ type = "card", count = 3 }) => {
-  const Component = type === "card" ? SkeletonCard : SkeletonRow;
-  return (
-    <>
-      {Array.from({ length: count }).map((_, i) => (
-        <Component key={i} />
-      ))}
-    </>
-  );
+  if (type === "card") {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className="glass-card rounded-2xl overflow-hidden">
+            <div className="h-48 bg-slate-700/50 animate-pulse" />
+            <div className="p-5">
+              <div className="h-4 bg-slate-700/50 rounded mb-3 w-3/4 animate-pulse" />
+              <div className="h-3 bg-slate-700/50 rounded mb-2 w-1/2 animate-pulse" />
+              <div className="flex justify-between">
+                <div className="h-8 bg-slate-700/50 rounded w-20 animate-pulse" />
+                <div className="h-6 bg-slate-700/50 rounded w-16 animate-pulse" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (type === "row") {
+    return (
+      <div className="space-y-4">
+        {Array.from({ length: count }).map((_, i) => (
+          <div key={i} className="glass-card p-4 rounded-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-slate-700/50 rounded-lg animate-pulse" />
+              <div className="flex-1">
+                <div className="h-4 bg-slate-700/50 rounded mb-2 w-3/4 animate-pulse" />
+                <div className="h-3 bg-slate-700/50 rounded w-1/2 animate-pulse" />
+              </div>
+              <div className="w-16 h-8 bg-slate-700/50 rounded animate-pulse" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Fallback to animated loader for single loading state
+  return <AnimatedLoader type="pulse" size="large" />;
 };
 
 export default SkeletonLoader;

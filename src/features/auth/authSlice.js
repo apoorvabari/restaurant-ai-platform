@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axiosInstance from '../../api/axiosConfig';
+import { setAuthToken } from '../../api/axiosConfig';
 
 export const login = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
   try {
@@ -29,28 +30,25 @@ const authSlice = createSlice({
     isAuthenticated: false,
     status: 'idle',
     error: null,
-    authMode: 'auth0', // 'auth0' or 'local'
   },
   reducers: {
     logout: (state) => {
       state.user = null;
       state.token = null;
       state.isAuthenticated = false;
-      localStorage.removeItem('token');
-      localStorage.removeItem('authMode');
+      setAuthToken(null);
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
     },
-    setAuth0User: (state, action) => {
-      state.user = action.payload;
-      state.isAuthenticated = true;
-      state.authMode = 'auth0';
-    },
-    setLocalAuth: (state, action) => {
-      state.token = action.payload.token;
-      state.user = action.payload.user;
-      state.isAuthenticated = true;
-      state.authMode = 'local';
-      localStorage.setItem('token', action.payload.token);
-      localStorage.setItem('authMode', 'local');
+    initializeAuth: (state) => {
+      const token = localStorage.getItem('authToken');
+      const user = localStorage.getItem('authUser');
+      if (token && user) {
+        state.token = token;
+        state.user = JSON.parse(user);
+        state.isAuthenticated = true;
+        setAuthToken(token);
+      }
     },
   },
   extraReducers: (builder) => {
@@ -64,9 +62,7 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         state.user = { email: action.payload.email, role: action.payload.role, userId: action.payload.userId };
         state.isAuthenticated = true;
-        state.authMode = 'local';
-        localStorage.setItem('token', action.payload.token);
-        localStorage.setItem('authMode', 'local');
+        setAuthToken(action.payload.token);
       })
       .addCase(login.rejected, (state, action) => {
         state.status = 'failed';
@@ -87,5 +83,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setAuth0User, setLocalAuth } = authSlice.actions;
+export const { logout, initializeAuth } = authSlice.actions;
 export default authSlice.reducer;

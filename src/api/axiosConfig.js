@@ -6,27 +6,31 @@ const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Interceptor to dynamically add token from localStorage to each request
+// Set auth token from localStorage if available
+const setAuthToken = (token) => {
+  if (token) {
+    axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete axiosInstance.defaults.headers.common['Authorization'];
+  }
+};
+
+// Load token from localStorage on initialization
+const token = localStorage.getItem('authToken');
+if (token) {
+  setAuthToken(token);
+}
+
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Function to attach Auth0 or local JWT token to future requests
-export const setAuthToken = (token) => {
-  if (token) {
-    localStorage.setItem('token', token);
-  } else {
-    localStorage.removeItem('token');
-  }
-};
-
 export default axiosInstance;
+export { setAuthToken };

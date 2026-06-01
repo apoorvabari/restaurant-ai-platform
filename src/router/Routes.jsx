@@ -13,9 +13,9 @@ import FeedbackPage from '../features/user/pages/FeedbackPage';
 // Public Routes
 import HomePage from '../pages/HomePage';
 import MenuPage from '../pages/MenuPage';
+import PublicFeedbackPage from '../features/public/pages/PublicFeedbackPage';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
-import PublicFeedbackPage from '../features/public/pages/PublicFeedbackPage';
 
 const AppRoutes = () => {
   return (
@@ -23,9 +23,11 @@ const AppRoutes = () => {
       {/* Public Routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/menu" element={<MenuPage />} />
+      <Route path="/feedbacks" element={<PublicFeedbackPage />} />
+
+      {/* Auth routes - Custom JWT authentication */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/feedbacks" element={<PublicFeedbackPage />} />
 
       {/* Admin Routes - Protected, requires ADMIN role */}
       <Route

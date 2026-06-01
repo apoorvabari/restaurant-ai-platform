@@ -1,25 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCartCount, toggleCart } from "../features/cart/cartSlice";
 import { logout } from "../features/auth/authSlice";
-import { ShoppingCart, Menu, X, ChefHat, LogOut, User, LayoutDashboard } from "lucide-react";
+
+import { selectCartCount, toggleCart } from "../features/cart/cartSlice";
+
+import {
+  ShoppingCart,
+  Menu,
+  X,
+  ChefHat,
+  LogOut,
+  User,
+  LayoutDashboard,
+} from "lucide-react";
 
 const Navbar = () => {
-  const { loginWithRedirect, logout: auth0Logout, user: auth0User, isAuthenticated: auth0Authenticated } = useAuth0();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const location = useLocation();
+  const navigate = useNavigate();
+
   const cartCount = useSelector(selectCartCount);
-  const { isAuthenticated, user, authMode } = useSelector((state) => state.auth);
+
+  const { isAuthenticated, user } = useSelector(
+    (state) => state.auth
+  );
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // Scroll Effect
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+
     window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   // Close mobile menu on route change
@@ -27,15 +47,27 @@ const Navbar = () => {
     setMobileOpen(false);
   }, [location.pathname]);
 
-  const handleLogout = () => {
-    if (authMode === 'local') {
-      dispatch(logout());
-      navigate('/');
+  // Persist token & user to localStorage when authentication state changes
+  useEffect(() => {
+    if (isAuthenticated) {
+      localStorage.setItem('authToken', user?.token || '');
+      localStorage.setItem('authUser', JSON.stringify(user));
     } else {
-      auth0Logout({ logoutParams: { returnTo: window.location.origin } });
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('authUser');
     }
+  }, [isAuthenticated, user]);
+
+  // Updated logout handler to also clear localStorage
+
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate('/');
+
   };
 
+  // Navigation Links
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/menu", label: "Menu" },
@@ -47,9 +79,30 @@ const Navbar = () => {
     { to: "/feedback", label: "Feedback" },
   ];
 
-  const isAdmin = user?.role === 'ADMIN';
+  // Admin Check
+  const isAdmin =
+    user?.role === "ADMIN" ||
+    user?.roles?.includes("ADMIN");
 
-  const isActive = (path) => location.pathname === path;
+  // Active Route Check
+  const isActive = (path) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+
+    return location.pathname.startsWith(path);
+  };
+
+  // User Display
+  const userDisplayName =
+    user?.name ||
+    user?.email?.split("@")?.[0] ||
+    "User";
+
+  const userInitial =
+    user?.name?.charAt(0)?.toUpperCase() ||
+    user?.email?.charAt(0)?.toUpperCase() ||
+    "U";
 
   return (
     <nav
@@ -60,18 +113,28 @@ const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+        
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
+        <Link
+          to="/"
+          className="flex items-center gap-3 group"
+        >
           <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 group-hover:shadow-amber-500/50 transition-shadow duration-300">
             <ChefHat className="w-5 h-5 text-white" />
           </div>
+
           <div>
-            <h1 className="text-xl font-black tracking-tight text-white leading-none heading-elegant">APOORVA</h1>
-            <p className="text-[10px] font-medium text-amber-400 tracking-[0.2em]">RESTAURANT</p>
+            <h1 className="text-xl font-black tracking-tight text-white leading-none">
+              APOORVA
+            </h1>
+
+            <p className="text-[10px] font-medium text-amber-400 tracking-[0.2em]">
+              RESTAURANT
+            </p>
           </div>
         </Link>
 
-        {/* Desktop Nav Links */}
+        {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map((link) => (
             <Link
@@ -84,27 +147,33 @@ const Navbar = () => {
               }`}
             >
               {link.label}
+
               {isActive(link.to) && (
                 <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-400 rounded-full" />
               )}
             </Link>
           ))}
-          {isAuthenticated && authenticatedLinks.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-                isActive(link.to)
-                  ? "text-amber-400 bg-amber-500/10"
-                  : "text-slate-300 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              {link.label}
-              {isActive(link.to) && (
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-400 rounded-full" />
-              )}
-            </Link>
-          ))}
+
+          {isAuthenticated &&
+            authenticatedLinks.map((link) => (
+              <Link
+                key={link.to}
+                to={link.to}
+                className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
+                  isActive(link.to)
+                    ? "text-amber-400 bg-amber-500/10"
+                    : "text-slate-300 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                {link.label}
+
+                {isActive(link.to) && (
+                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-amber-400 rounded-full" />
+                )}
+              </Link>
+            ))}
+
+          {/* Admin Panel */}
           {isAuthenticated && isAdmin && (
             <Link
               to="/admin"
@@ -122,49 +191,52 @@ const Navbar = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-3">
-          {/* Cart Button */}
+
+          {/* Cart */}
           <button
             onClick={() => dispatch(toggleCart())}
             className="relative p-2.5 rounded-xl hover:bg-white/5 transition-all duration-300 group"
             id="cart-button"
           >
             <ShoppingCart className="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" />
+
             {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-scale-in shadow-lg shadow-amber-500/50">
+              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-lg shadow-amber-500/50">
                 {cartCount}
               </span>
             )}
           </button>
 
-          {/* Auth */}
+          {/* Desktop Auth */}
           {!isAuthenticated ? (
             <div className="hidden md:flex items-center gap-2">
               <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
                 <User className="w-4 h-4 text-slate-500" />
               </div>
-              <Link
-                to="/login"
-                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white rounded-xl hover:bg-white/5 transition-all duration-300"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
+
+              <button
+                onClick={() => navigate('/login')}
                 className="px-4 py-2 bg-gradient-to-r from-amber-500 to-green-600 hover:from-amber-600 hover:to-green-700 rounded-xl font-semibold text-sm text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all duration-300"
+                id="signin-button"
               >
-                Register
-              </Link>
+                Sign In
+              </button>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-3">
+
+              {/* User Info */}
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-green-600/10 border border-amber-500/20">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-green-600 flex items-center justify-center text-white text-xs font-bold">
-                  {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
+                  {userInitial}
                 </div>
+
                 <span className="text-sm font-medium text-white">
-                  {user?.name || user?.email?.split('@')[0] || "User"}
+                  {userDisplayName}
                 </span>
               </div>
+
+              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-400 hover:text-red-400 border border-white/10 hover:border-red-500/30 rounded-xl transition-all duration-300"
@@ -192,8 +264,10 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-white/10 bg-amber-950/95 backdrop-blur-xl animate-fade-in">
+        <div className="md:hidden border-t border-white/10 bg-amber-950/95 backdrop-blur-xl">
           <div className="px-6 py-4 space-y-1">
+
+            {/* Navigation Links */}
             {navLinks.map((link) => (
               <Link
                 key={link.to}
@@ -207,53 +281,72 @@ const Navbar = () => {
                 {link.label}
               </Link>
             ))}
-            {isAuthenticated && authenticatedLinks.map((link) => (
-              <Link
-                key={link.to}
-                to={link.to}
-                className={`block px-4 py-3 text-sm font-medium rounded-xl transition-all ${
-                  isActive(link.to)
-                    ? "text-amber-400 bg-amber-500/10"
-                    : "text-slate-300 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                {link.label}
-              </Link>
-            ))}
+
+            {/* Authenticated Links */}
+            {isAuthenticated &&
+              authenticatedLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`block px-4 py-3 text-sm font-medium rounded-xl transition-all ${
+                    isActive(link.to)
+                      ? "text-amber-400 bg-amber-500/10"
+                      : "text-slate-300 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              ))}
+
+            {/* Admin */}
             {isAuthenticated && isAdmin && (
               <Link
                 to="/admin"
                 className="block px-4 py-3 text-sm font-medium rounded-xl text-slate-300 hover:text-red-400 hover:bg-white/5"
               >
-                Admin
+                Admin Panel
               </Link>
             )}
+
+            {/* Bottom Auth Section */}
             <div className="pt-3 border-t border-white/10 mt-3">
+
               {!isAuthenticated ? (
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
                     <User className="w-4 h-4 text-slate-500" />
                   </div>
-                  <span className="text-sm text-slate-500">Not logged in</span>
+
+                  <span className="text-sm text-slate-500">
+                    Not signed in
+                  </span>
                 </div>
               ) : (
                 <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 to-green-600/10 border border-amber-500/20">
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-green-600 flex items-center justify-center text-white text-xs font-bold">
-                    {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
+                    {userInitial}
                   </div>
+
                   <span className="text-sm font-medium text-white">
-                    {user?.name || user?.email?.split('@')[0] || "User"}
+                    {userDisplayName}
                   </span>
                 </div>
               )}
+
               <div className="flex gap-2">
+
                 {!isAuthenticated ? (
-                  <>
-                    <Link to="/login" className="flex-1 text-center py-3 text-sm font-medium rounded-xl border border-white/10 text-white hover:bg-white/5">Login</Link>
-                    <Link to="/register" className="flex-1 text-center py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-amber-500 to-green-600 text-white">Register</Link>
-                  </>
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="w-full text-center py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-amber-500 to-green-600 text-white"
+                  >
+                    Sign In
+                  </button>
                 ) : (
-                  <button onClick={handleLogout} className="w-full py-3 text-sm font-medium text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/10">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-3 text-sm font-medium text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/10"
+                  >
                     Logout
                   </button>
                 )}

@@ -1,7 +1,8 @@
 import { BrowserRouter as Router } from "react-router-dom";
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { fetchMenu } from "./features/menu/menuSlice";
+import { initializeAuth } from "./features/auth/authSlice";
 
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -10,6 +11,11 @@ import AppRoutes from "./router/Routes";
 
 function App() {
   const dispatch = useDispatch();
+
+  // Initialize auth from localStorage
+  useEffect(() => {
+    dispatch(initializeAuth());
+  }, [dispatch]);
 
   // Pre-fetch menu data for the whole app
   useEffect(() => {
