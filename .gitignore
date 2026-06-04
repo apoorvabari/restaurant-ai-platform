@@ -47,3 +47,12 @@ Thumbs.db
 .cache
 .temp
 *.tsbuildinfo
+
+# Keycloak binaries and realm exports
+keycloak-*/
+restaurant-realm.json
+
+# Temp / secrets
+admin_token.tmp
+fix-keycloak.js
+testuser.json

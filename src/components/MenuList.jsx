@@ -1,7 +1,8 @@
 import React from "react";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../features/cart/cartSlice";
-import { Plus, Flame, Leaf } from "lucide-react";
+import { motion } from "framer-motion";
+import AnimatedMenuCard from "./AnimatedMenuCard";
 import SkeletonLoader from "./SkeletonLoader";
 
 const MenuList = ({ items = [], status, limit }) => {
@@ -47,85 +48,33 @@ const MenuList = ({ items = [], status, limit }) => {
   const isVeg = (itemName) => {
     if (!itemName) return true;
     const name = itemName.toLowerCase();
-    const nonVegKeywords = ['chicken', 'mutton', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'prawn', 'shrimp', 'lobster', 'crab', 'egg', 'omelette', 'bacon', 'ham', 'sausage', 'turkey', 'duck', 'lamb', 'goat', 'keema', 'tikka', 'wings'];
+    const nonVegKeywords = ['chicken', 'mutton', 'pork', 'fish', 'salmon', 'tuna', 'prawn', 'shrimp', 'lobster', 'crab', 'egg', 'omelette', 'bacon', 'ham', 'sausage', 'turkey', 'duck', 'lamb', 'goat', 'keema', 'tikka', 'wings'];
     return !nonVegKeywords.some(keyword => name.includes(keyword));
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <motion.div 
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+    >
       {displayItems.map((item, index) => (
-        <div
+        <motion.div
           key={item.id}
-          className="bg-slate-900/80 rounded-2xl overflow-hidden group border border-amber-500/30"
-          style={{ animationDelay: `${index * 0.05}s` }}
+          className="h-full"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            delay: index * 0.1, 
+            duration: 0.5, 
+            ease: [0.4, 0, 0.2, 1] 
+          }}
         >
-          {/* Image / Emoji Header */}
-          <div className="h-48 bg-gradient-to-br from-brand-500/10 via-accent-500/5 to-transparent flex items-center justify-center relative overflow-hidden">
-            {item.imageUrl ? (
-              <img
-                src={item.imageUrl}
-                alt={item.itemName}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <span className="text-6xl group-hover:scale-110 transition-transform duration-500" style={{ display: item.imageUrl ? 'none' : 'flex' }}>
-              {getEmoji(item.category)}
-            </span>
-            {/* Veg / Non-veg indicator */}
-            <div className="absolute top-3 left-3">
-              {(() => {
-                const veg = isVeg(item.itemName);
-                return (
-                  <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full shadow-lg ${
-                    veg
-                      ? "bg-green-500 border-2 border-green-400 text-white"
-                      : "bg-red-500 border-2 border-red-400 text-white"
-                  }`}>
-                    {veg ? <Leaf className="w-4 h-4" /> : <Flame className="w-4 h-4" />}
-                    {veg ? 'Veg' : 'Non-Veg'}
-                  </span>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="p-5">
-            <div className="flex justify-between items-start mb-2">
-              <h3 className="text-lg font-bold text-white group-hover:text-brand-400 transition-colors line-clamp-1">
-                {item.itemName}
-              </h3>
-              <span className="text-brand-400 font-bold text-lg ml-2 flex-shrink-0">
-                ₹{item.price}
-              </span>
-            </div>
-
-            {item.description && (
-              <p className="text-slate-500 text-sm line-clamp-2 mb-3 leading-relaxed">
-                {item.description}
-              </p>
-            )}
-
-            <div className="flex items-center justify-between mt-3">
-              <span className="text-xs px-3 py-1 bg-white/5 border border-white/10 rounded-full text-slate-400 font-medium">
-                {item.category}
-              </span>
-              <button
-                onClick={() => dispatch(addToCart(item))}
-                className="flex items-center gap-1.5 px-4 py-2 bg-brand-500/10 border border-brand-500/20 rounded-xl text-brand-400 text-sm font-semibold hover:bg-brand-500 hover:text-white hover:border-brand-500 hover:shadow-lg hover:shadow-brand-500/25 transition-all duration-300 active:scale-95"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Add
-              </button>
-            </div>
-          </div>
-        </div>
+          <AnimatedMenuCard item={item} onAddToCart={(item) => dispatch(addToCart(item))} />
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 

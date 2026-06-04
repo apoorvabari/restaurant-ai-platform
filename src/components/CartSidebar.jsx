@@ -40,15 +40,20 @@ const CartSidebar = () => {
 
   const handlePaymentSuccess = () => {
     // After successful payment, place the actual order
+    if (!items || items.length === 0) {
+      console.error("Cannot place order: cart is empty");
+      return;
+    }
+    
     const orderData = {
       items: items.map((item) => ({
         menuItemId: item.id,
-        itemName: item.itemName,
         quantity: item.quantity,
-        price: item.price,
       })),
-      totalAmount: total,
+      customerName: "Guest User", // Default customer name for unauthenticated users
     };
+    
+    console.log("Placing order with data:", orderData);
     dispatch(placeOrder(orderData));
     dispatch(clearCart());
     dispatch(closeCart());

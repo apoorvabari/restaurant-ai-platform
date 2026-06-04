@@ -12,8 +12,16 @@ const TopRatedSuggestions = () => {
   const isVeg = (itemName) => {
     if (!itemName) return true;
     const name = itemName.toLowerCase();
-    const nonVegKeywords = ['chicken', 'mutton', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'prawn', 'shrimp', 'lobster', 'crab', 'egg', 'omelette', 'bacon', 'ham', 'sausage', 'turkey', 'duck', 'lamb', 'goat', 'keema', 'tikka', 'wings'];
+    const nonVegKeywords = ['chicken', 'mutton', 'pork', 'fish', 'salmon', 'tuna', 'prawn', 'shrimp', 'lobster', 'crab', 'egg', 'omelette', 'bacon', 'ham', 'sausage', 'turkey', 'duck', 'lamb', 'goat', 'keema', 'tikka', 'wings'];
     return !nonVegKeywords.some(keyword => name.includes(keyword));
+  };
+
+  const resolveImageUrl = (url) => {
+    if (!url) return null;
+    if (url.startsWith('/')) {
+      return `${import.meta.env.BASE_URL}${url.replace(/^\/+/, '')}`;
+    }
+    return url;
   };
 
   useEffect(() => {
@@ -61,11 +69,11 @@ const TopRatedSuggestions = () => {
             {/* Image */}
             <div className="relative h-32 overflow-hidden">
               <img
-                src={item.imageUrl || '/placeholder-food.jpg'}
+                src={resolveImageUrl(item.imageUrl) || `${import.meta.env.BASE_URL}placeholder-food.jpg`}
                 alt={item.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 onError={(e) => {
-                  e.target.src = '/placeholder-food.jpg';
+                  e.target.src = `${import.meta.env.BASE_URL}placeholder-food.jpg`;
                 }}
               />
               {/* Rating Badge */}

@@ -14,7 +14,6 @@ import FeedbackPage from '../features/user/pages/FeedbackPage';
 import HomePage from '../pages/HomePage';
 import MenuPage from '../pages/MenuPage';
 import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
 import PublicFeedbackPage from '../features/public/pages/PublicFeedbackPage';
 
 const AppRoutes = () => {
@@ -24,7 +23,7 @@ const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/menu" element={<MenuPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/register" element={<Navigate to="/login" replace />} />
       <Route path="/feedbacks" element={<PublicFeedbackPage />} />
 
       {/* Admin Routes - Protected, requires ADMIN role */}

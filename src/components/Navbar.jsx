@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useAuth0 } from "@auth0/auth0-react";
 import { useSelector, useDispatch } from "react-redux";
+import { useKeycloak } from "@react-keycloak/web";
+
 import { selectCartCount, toggleCart } from "../features/cart/cartSlice";
 import { logout } from "../features/auth/authSlice";
 import { ShoppingCart, Menu, X, ChefHat, LogOut, User, LayoutDashboard } from "lucide-react";
 
 const Navbar = () => {
-  const { loginWithRedirect, logout: auth0Logout, user: auth0User, isAuthenticated: auth0Authenticated } = useAuth0();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { keycloak } = useKeycloak();
   const cartCount = useSelector(selectCartCount);
-  const { isAuthenticated, user, authMode } = useSelector((state) => state.auth);
+  const { isAuthenticated, user, roles } = useSelector((state) => state.auth);
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -28,12 +30,8 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const handleLogout = () => {
-    if (authMode === 'local') {
-      dispatch(logout());
-      navigate('/');
-    } else {
-      auth0Logout({ logoutParams: { returnTo: window.location.origin } });
-    }
+    keycloak.logout();
+    dispatch(logout());
   };
 
   const navLinks = [
@@ -47,7 +45,7 @@ const Navbar = () => {
     { to: "/feedback", label: "Feedback" },
   ];
 
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = roles?.includes('ROLE_ADMIN');
 
   const isActive = (path) => location.pathname === path;
 
@@ -148,21 +146,22 @@ const Navbar = () => {
               >
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="px-4 py-2 bg-gradient-to-r from-amber-500 to-green-600 hover:from-amber-600 hover:to-green-700 rounded-xl font-semibold text-sm text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all duration-300"
-              >
-                Register
-              </Link>
+
+                <Link
+                  to="/register"
+                  className="px-4 py-2 bg-gradient-to-r from-amber-500 to-green-600 hover:from-amber-600 hover:to-green-700 rounded-xl font-semibold text-sm text-white shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 transition-all duration-300"
+                >
+                  Register
+                </Link>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-3">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/10 to-green-600/10 border border-amber-500/20">
                 <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-green-600 flex items-center justify-center text-white text-xs font-bold">
-                  {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
+                  {keycloak.tokenParsed?.given_name?.charAt(0)?.toUpperCase() || keycloak.tokenParsed?.email?.charAt(0)?.toUpperCase() || "U"}
                 </div>
                 <span className="text-sm font-medium text-white">
-                  {user?.name || user?.email?.split('@')[0] || "User"}
+                  {keycloak.tokenParsed?.given_name || keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email?.split('@')[0] || "User"}
                 </span>
               </div>
               <button
@@ -239,10 +238,10 @@ const Navbar = () => {
               ) : (
                 <div className="flex items-center gap-3 mb-3 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/10 to-green-600/10 border border-amber-500/20">
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-500 to-green-600 flex items-center justify-center text-white text-xs font-bold">
-                    {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || "U"}
+                    {keycloak.tokenParsed?.given_name?.charAt(0)?.toUpperCase() || keycloak.tokenParsed?.email?.charAt(0)?.toUpperCase() || "U"}
                   </div>
                   <span className="text-sm font-medium text-white">
-                    {user?.name || user?.email?.split('@')[0] || "User"}
+                    {keycloak.tokenParsed?.given_name || keycloak.tokenParsed?.preferred_username || keycloak.tokenParsed?.email?.split('@')[0] || "User"}
                   </span>
                 </div>
               )}
@@ -250,7 +249,7 @@ const Navbar = () => {
                 {!isAuthenticated ? (
                   <>
                     <Link to="/login" className="flex-1 text-center py-3 text-sm font-medium rounded-xl border border-white/10 text-white hover:bg-white/5">Login</Link>
-                    <Link to="/register" className="flex-1 text-center py-3 text-sm font-semibold rounded-xl bg-gradient-to-r from-amber-500 to-green-600 text-white">Register</Link>
+                    
                   </>
                 ) : (
                   <button onClick={handleLogout} className="w-full py-3 text-sm font-medium text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/10">

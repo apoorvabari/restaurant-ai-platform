@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useKeycloak } from "@react-keycloak/web";
 import { fetchReservations, deleteReservation } from "../features/reservations/reservationSlice";
 import { Calendar, Clock, Users, AlertCircle, CalendarCheck, Loader2, Trash2 } from "lucide-react";
 import SkeletonLoader from "./SkeletonLoader";
@@ -17,6 +18,7 @@ const statusStyles = {
 
 const ReservationTracker = () => {
   const dispatch = useDispatch();
+  const { keycloak, initialized } = useKeycloak();
   const { list: reservations, status, error } = useSelector((state) => state.reservations);
 
   const handleDelete = (reservationId, e) => {
@@ -27,15 +29,18 @@ const ReservationTracker = () => {
   };
 
   useEffect(() => {
+    // Only fetch if Keycloak is ready and the user is authenticated
+    if (!initialized || !keycloak.authenticated) return;
+
     dispatch(fetchReservations());
-    
+
     // Poll for updates every 30 seconds to reflect status changes
     const interval = setInterval(() => {
       dispatch(fetchReservations());
     }, 30000);
 
     return () => clearInterval(interval);
-  }, [dispatch]);
+  }, [dispatch, initialized, keycloak.authenticated]);
 
   if (status === "loading") {
     return (

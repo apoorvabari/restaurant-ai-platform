@@ -1,49 +1,65 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import './index.css';
 import { Provider } from 'react-redux';
+import { ReactKeycloakProvider } from '@react-keycloak/web';
+import App from './App.jsx';
 import store from './app/store.js';
-import { Auth0Provider } from '@auth0/auth0-react';
+import keycloak from './config/keycloak.js';
+import './index.css';
 
-// SET THIS TO 'auth0' or 'local'
-const AUTH_MODE = "local"; 
+const container = document.getElementById('root');
+if (!window.__REACT_ROOT__) {
+  window.__REACT_ROOT__ = ReactDOM.createRoot(container);
+}
 
-// --- Auth0 Config ---
-const auth0Config = {
-  domain: "dev-qfpyjoooo6px8kqf.jp.auth0.com",
-  clientId: "2xNtzXnd9I6lHsGW6GjSTSXv4gs7kZbo",
-  authorizationParams: {
-    redirect_uri: window.location.origin,
-    scope: "openid profile email"
-  },
-  cacheLocation: "localstorage",
-  useRefreshTokens: true
+const keycloakInitOptions = {
+  onLoad: 'login-required',
+  checkLoginIframe: false,        // Prevents iframe session checks (stops the master/account iframe error)
+  silentCheckSsoFallback: false,  // Prevents fallback iframe that hits /realms/master/account
+  pkceMethod: 'S256',
+  redirectUri: 'http://localhost:5176/restaurant-ai-platform/',
+  flow: 'standard',
 };
 
-// --- Keycloak Config ---
-// Integration for Keycloak will be added here using 'keycloak-js' if desired.
-// For now, only the Auth0 provider is active when mode is 'auth0'.
+// NOTE: React.StrictMode is intentionally omitted here.
+// Keycloak JS only allows a single init() call per instance.
+// StrictMode double-invokes effects in dev, causing:
+// "A 'Keycloak' instance can only be initialized once."
+window.__REACT_ROOT__.render(
+  <ReactKeycloakProvider
+    authClient={keycloak}
+    initOptions={keycloakInitOptions}
+    onEvent={(event, error) => {
+      if (event === 'onAuthSuccess') {
+        const token = keycloak.token;
+        const parsedToken = keycloak.tokenParsed;
+        const roles = parsedToken?.realm_access?.roles || [];
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    {AUTH_MODE === "auth0" ? (
-      <Auth0Provider
-        domain={auth0Config.domain}
-        clientId={auth0Config.clientId}
-        authorizationParams={auth0Config.authorizationParams}
-        cacheLocation={auth0Config.cacheLocation}
-        useRefreshTokens={auth0Config.useRefreshTokens}
-      >
-        <Provider store={store}>
-          <App />
-        </Provider>
-      </Auth0Provider>
-    ) : (
-      /* Local authentication mode - no Auth0Provider needed */
-      <Provider store={store}>
-        <App />
-      </Provider>
-    )}
-  </React.StrictMode>
+        store.dispatch({
+          type: 'auth/setUser',
+          payload: {
+            user: {
+              email: parsedToken?.email,
+              name: parsedToken?.given_name,
+              preferred_username: parsedToken?.preferred_username,
+            },
+            token: token,
+            roles: roles,
+          },
+        });
+
+        // axiosConfig reads keycloak.token directly on every request — no manual update needed.
+      }
+      if (event === 'onAuthLogout') {
+        store.dispatch({ type: 'auth/logout' });
+      }
+      if (event === 'onAuthError' || event === 'onInitError') {
+        // This fires if Keycloak server is unreachable or auth fails
+        console.error('[Keycloak] Auth/Init error — is Keycloak running on http://localhost:8180?', error);
+      }
+    }}
+  >
+    <Provider store={store}>
+      <App />
+    </Provider>
+  </ReactKeycloakProvider>
 );

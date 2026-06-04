@@ -13,6 +13,7 @@ const ReservationForm = () => {
   const [lastReservation, setLastReservation] = useState(null);
   const [formData, setFormData] = useState({
     customerName: "",
+    email: "",
     phoneNumber: "",
     numberOfGuests: 2,
     reservationDate: "",
@@ -54,6 +55,10 @@ const ReservationForm = () => {
       setError("Please enter your name");
       return;
     }
+    if (!formData.email || !formData.email.includes('@')) {
+      setError("Please enter a valid email address");
+      return;
+    }
     if (!formData.phoneNumber || formData.phoneNumber.length !== 10) {
       setError("Please enter a valid 10-digit phone number");
       return;
@@ -91,6 +96,7 @@ const ReservationForm = () => {
       setSubmitted(true);
       setFormData({
         customerName: "",
+        email: "",
         phoneNumber: "",
         numberOfGuests: 2,
         reservationDate: "",
@@ -220,6 +226,20 @@ const ReservationForm = () => {
           />
         </div>
 
+        {/* Email */}
+        <div className="relative">
+          <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl pl-11 pr-4 py-3 text-amber-100 placeholder:text-amber-400/50 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+          />
+        </div>
+
         {/* Phone */}
         <div className="relative">
           <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500" />
@@ -322,7 +342,7 @@ const ReservationForm = () => {
             name="tableId"
             value={formData.tableId}
             onChange={handleChange}
-            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl px-4 py-3 text-amber-100 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all"
+            className="w-full bg-amber-900/50 border border-amber-700 rounded-xl px-4 py-3 text-amber-100 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all appearance-none cursor-pointer"
             required
           >
             <option value="">Select a table</option>
@@ -354,6 +374,9 @@ const ReservationForm = () => {
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"></span> Occupied</span>
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-slate-400"></span> Expired</span>
           </div>
+          {tables.length === 0 && (
+            <p className="text-xs text-amber-400 mt-2">Loading tables...</p>
+          )}
         </div>
 
         {/* Duration Hours */}

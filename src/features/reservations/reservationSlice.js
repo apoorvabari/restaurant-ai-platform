@@ -40,23 +40,24 @@ const reservationSlice = createSlice({
   name: "reservations",
   initialState: {
     list: [],
-    status: "idle",
+    status: "idle",       // for fetchReservations
+    createStatus: "idle", // for createReservation (separate to avoid collision)
     error: null,
   },
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(createReservation.pending, (state) => {
-        state.status = "loading";
+        state.createStatus = "loading";
         state.error = null;
       })
       .addCase(createReservation.fulfilled, (state, action) => {
-        state.status = "succeeded";
+        state.createStatus = "succeeded";
         state.list.push(action.payload);
         state.error = null;
       })
       .addCase(createReservation.rejected, (state, action) => {
-        state.status = "failed";
+        state.createStatus = "failed";
         state.error = action.payload;
       })
       .addCase(fetchReservations.pending, (state) => {

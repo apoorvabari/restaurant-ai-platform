@@ -27,11 +27,10 @@ const StatusTimeline = ({ currentStatus }) => {
         <React.Fragment key={step}>
           <div className="flex flex-col items-center">
             <div
-              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${
-                i <= activeStep
+              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-500 ${i <= activeStep
                   ? "bg-amber-500 text-amber-950 shadow-lg shadow-amber-500/30"
                   : "bg-amber-900/50 border border-amber-700 text-amber-500"
-              } ${i === activeStep ? "animate-pulse-glow ring-2 ring-amber-500/30" : ""}`}
+                } ${i === activeStep ? "animate-pulse-glow ring-2 ring-amber-500/30" : ""}`}
             >
               {i < activeStep ? "✓" : i + 1}
             </div>
@@ -186,20 +185,6 @@ const OrderTracker = ({ isAdmin = false, onUpdateStatus = null }) => {
                 )}
                 <StatusTimeline currentStatus={order.status} />
 
-                <div className="mt-5 space-y-2">
-                  <h5 className="text-xs font-semibold text-gray-400/70 uppercase tracking-wider">Items</h5>
-                  {order.items?.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center py-2 border-b border-gray-700/20 last:border-0">
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg">🍛</span>
-                        <span className="text-sm text-white">{item.itemName}</span>
-                      </div>
-                      <div className="text-sm text-gray-300">
-                        × {item.quantity} — <span className="text-amber-400">₹{item.price}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
           </div>

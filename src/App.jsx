@@ -17,7 +17,7 @@ function App() {
   }, [dispatch]);
 
   return (
-    <Router>
+    <Router basename="/restaurant-ai-platform/">
       <div className="flex flex-col min-h-screen">
         <Navbar />
         <CartSidebar />
