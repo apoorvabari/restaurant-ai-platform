@@ -2,31 +2,35 @@ package com.apoorva.restaurant.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 import java.util.List;
 
 /**
- * Global CORS filter that guarantees the Access‑Control headers are added for
- * every request, regardless of the Spring Security filter chain configuration.
- * This is a safety‑net for the dev environment (http://localhost:3000).
+ * Global CORS filter at HIGHEST_PRECEDENCE — runs before Spring Security so
+ * Access-Control headers are present even on 401/403 responses.
  */
 @Configuration
 public class CorsGlobalConfig {
 
     @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
-        // allowed origin for the React dev server
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        // HTTP methods we support
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // any header is allowed (including Authorization)
+        config.setAllowedOrigins(List.of(
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:5175",
+            "http://localhost:5176"
+        ));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
-        // the browser is allowed to send cookies / Authorization header
         config.setAllowCredentials(true);
-        // register for all paths
+        config.setExposedHeaders(List.of("Authorization", "Content-Type"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);

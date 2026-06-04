@@ -81,3 +81,15 @@ Desktop.ini
 
 # Application specific
 application-local.properties
+
+# Environment / secrets — NEVER commit these
+.env
+*.env
+
+# Large bundled files
+maven.zip
+apache-maven-*/
+
+# Scratch files
+AlterDb.java
+AlterDb.class

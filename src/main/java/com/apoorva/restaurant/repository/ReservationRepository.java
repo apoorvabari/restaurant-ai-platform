@@ -2,6 +2,8 @@ package com.apoorva.restaurant.repository;
 
 import com.apoorva.restaurant.entity.Reservation;
 import com.apoorva.restaurant.entity.Reservation.ReservationStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,4 +18,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     @Query("SELECT r FROM Reservation r WHERE r.tableId = :tableId AND r.reservationDate = :date AND r.deleted = false AND r.status NOT IN :excludedStatuses")
     List<Reservation> findByTableIdAndDate(@Param("tableId") Long tableId, @Param("date") LocalDate date, @Param("excludedStatuses") List<ReservationStatus> excludedStatuses);
+
+    Page<Reservation> findByUserIdAndDeletedFalse(String userId, Pageable pageable);
 }

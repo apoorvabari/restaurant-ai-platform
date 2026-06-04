@@ -3,7 +3,7 @@ package com.apoorva.restaurant.user.controller;
 import com.apoorva.restaurant.dto.OrderRequest;
 import com.apoorva.restaurant.dto.OrderResponse;
 import com.apoorva.restaurant.entity.User;
-import com.apoorva.restaurant.repository.UserRepository;
+import com.apoorva.restaurant.service.KeycloakUserSyncService;
 import com.apoorva.restaurant.service.OrderService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -14,35 +14,43 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Order Controller — Keycloak OAuth2 authenticated.
+ *
+ * Uses {@link KeycloakUserSyncService} to resolve (and auto-provision) the
+ * local MySQL user from the Keycloak JWT on every request, eliminating
+ * the "User not found" error for first-time Keycloak users.
+ */
 @RestController
 @RequestMapping("/api/v1/user/orders")
 public class OrderController {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
-    private final OrderService orderService;
-    private final UserRepository userRepository;
 
-    public OrderController(OrderService orderService, UserRepository userRepository) {
+    private final OrderService orderService;
+    private final KeycloakUserSyncService keycloakUserSyncService;
+
+    public OrderController(OrderService orderService,
+                           KeycloakUserSyncService keycloakUserSyncService) {
         this.orderService = orderService;
-        this.userRepository = userRepository;
+        this.keycloakUserSyncService = keycloakUserSyncService;
     }
 
     @PostMapping
-    public ResponseEntity<OrderResponse> placeOrder(@Valid @RequestBody OrderRequest orderRequest, Authentication authentication) {
+    public ResponseEntity<OrderResponse> placeOrder(
+            @Valid @RequestBody OrderRequest orderRequest,
+            Authentication authentication) {
         try {
-            logger.info("Received order request with items count: {}", orderRequest.getItems() != null ? orderRequest.getItems().size() : 0);
-            if (orderRequest.getItems() != null) {
-                orderRequest.getItems().forEach(item -> 
-                    logger.info("Item - menuItemId: {}, quantity: {}", item.getMenuItemId(), item.getQuantity()));
-            }
-            
-            Long userId = extractUserId(authentication);
-            logger.info("Extracted userId: {}", userId);
-            
-            OrderResponse response = orderService.placeOrder(userId, orderRequest);
+            logger.info("Received order request with {} items",
+                    orderRequest.getItems() != null ? orderRequest.getItems().size() : 0);
+
+            User user = keycloakUserSyncService.getOrCreateUser(authentication);
+            logger.info("Placing order for user: {} (id={})", user.getEmail(), user.getId());
+
+            OrderResponse response = orderService.placeOrder(user.getId(), orderRequest);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("Error placing order. Request: {}", orderRequest, e);
+            logger.error("Error placing order", e);
             throw e;
         }
     }
@@ -50,8 +58,10 @@ public class OrderController {
     @GetMapping
     public ResponseEntity<List<OrderResponse>> getMyOrders(Authentication authentication) {
         try {
-            Long userId = extractUserId(authentication);
-            List<OrderResponse> orders = orderService.getOrdersByUserId(userId);
+            User user = keycloakUserSyncService.getOrCreateUser(authentication);
+            logger.info("Fetching orders for user: {} (id={})", user.getEmail(), user.getId());
+
+            List<OrderResponse> orders = orderService.getOrdersByUserId(user.getId());
             return ResponseEntity.ok(orders);
         } catch (Exception e) {
             logger.error("Error fetching user orders", e);
@@ -60,59 +70,41 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> getOrderById(@PathVariable Long orderId, Authentication authentication) {
+    public ResponseEntity<OrderResponse> getOrderById(
+            @PathVariable Long orderId,
+            Authentication authentication) {
         try {
-            Long userId = extractUserId(authentication);
+            User user = keycloakUserSyncService.getOrCreateUser(authentication);
             OrderResponse order = orderService.getOrderById(orderId);
-            
-            // Verify user owns the order (skip for unauthenticated users)
-            if (userId != null && !userId.equals(order.getUserId())) {
+
+            if (!user.getId().equals(order.getUserId())) {
                 throw new RuntimeException("You can only view your own orders");
             }
-            
+
             return ResponseEntity.ok(order);
         } catch (Exception e) {
-            logger.error("Error fetching order with id: {}", orderId, e);
+            logger.error("Error fetching order {}", orderId, e);
             throw e;
         }
     }
 
     @DeleteMapping("/{orderId}")
-    public ResponseEntity<Void> softDeleteOrder(@PathVariable Long orderId, Authentication authentication) {
+    public ResponseEntity<Void> softDeleteOrder(
+            @PathVariable Long orderId,
+            Authentication authentication) {
         try {
-            Long userId = extractUserId(authentication);
+            User user = keycloakUserSyncService.getOrCreateUser(authentication);
             OrderResponse order = orderService.getOrderById(orderId);
-            
-            // Verify user owns the order (skip for unauthenticated users)
-            if (userId != null && !userId.equals(order.getUserId())) {
+
+            if (!user.getId().equals(order.getUserId())) {
                 throw new RuntimeException("You can only delete your own orders");
             }
-            
+
             orderService.softDeleteOrder(orderId);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            logger.error("Error deleting order with id: {}", orderId, e);
+            logger.error("Error deleting order {}", orderId, e);
             throw e;
-        }
-    }
-
-    private Long extractUserId(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null; // Return null for unauthenticated users
-        }
-
-        String username = authentication.getName();
-        if (username == null || username.isEmpty() || "anonymousUser".equals(username)) {
-            return null; // Return null for anonymous users
-        }
-
-        try {
-            return Long.parseLong(username);
-        } catch (NumberFormatException e) {
-            logger.warn("Username is not a numeric ID, looking up by email: {}", username);
-            User user = userRepository.findByEmail(username)
-                    .orElse(null); // Return null if user not found
-            return user != null ? user.getId() : null;
         }
     }
 }

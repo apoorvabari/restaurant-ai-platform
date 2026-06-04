@@ -3,7 +3,7 @@ package com.apoorva.restaurant.user.controller;
 import com.apoorva.restaurant.dto.ReservationRequest;
 import com.apoorva.restaurant.dto.ReservationResponse;
 import com.apoorva.restaurant.entity.User;
-import com.apoorva.restaurant.repository.UserRepository;
+import com.apoorva.restaurant.service.KeycloakUserSyncService;
 import com.apoorva.restaurant.service.ReservationService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
@@ -18,23 +18,47 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * Reservation Controller — Keycloak OAuth2 authenticated.
+ *
+ * User identity is resolved via {@link KeycloakUserSyncService} which
+ * auto-provisions a MySQL row in `users` on first login and keeps it
+ * in sync with the Keycloak JWT claims on every subsequent request.
+ */
 @RestController
 @RequestMapping("/api/v1/user/reservations")
 public class ReservationController {
 
     private static final Logger logger = LoggerFactory.getLogger(ReservationController.class);
-    private final ReservationService reservationService;
-    private final UserRepository userRepository;
 
-    public ReservationController(ReservationService reservationService, UserRepository userRepository) {
+    private final ReservationService reservationService;
+    private final KeycloakUserSyncService keycloakUserSyncService;
+
+    public ReservationController(ReservationService reservationService,
+                                 KeycloakUserSyncService keycloakUserSyncService) {
         this.reservationService = reservationService;
-        this.userRepository = userRepository;
+        this.keycloakUserSyncService = keycloakUserSyncService;
     }
 
+    // -------------------------------------------------------------------------
+    // POST /api/v1/user/reservations
+    // -------------------------------------------------------------------------
     @PostMapping
-    public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody ReservationRequest request, Authentication authentication) {
+    public ResponseEntity<ReservationResponse> createReservation(
+            @Valid @RequestBody ReservationRequest request,
+            Authentication authentication) {
         try {
-            Long userId = authentication != null ? extractUserId(authentication) : null;
+            Long userId = null;
+
+            if (authentication != null && authentication.isAuthenticated()) {
+                // Auto-provision user in MySQL on first login, then get their id
+                User user = keycloakUserSyncService.getOrCreateUser(authentication);
+                userId = user.getId();
+                logger.info("Creating reservation for user: {} (id={})", user.getEmail(), userId);
+            } else {
+                logger.info("Creating reservation for unauthenticated user");
+            }
+
             return ResponseEntity.ok(reservationService.createReservation(request, userId));
         } catch (Exception e) {
             logger.error("Error creating reservation", e);
@@ -42,64 +66,57 @@ public class ReservationController {
         }
     }
 
+    // -------------------------------------------------------------------------
+    // GET /api/v1/user/reservations
+    // -------------------------------------------------------------------------
     @GetMapping
     public ResponseEntity<List<ReservationResponse>> getAllReservations(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "reservationDate") String sortBy,
-            Authentication authentication
-    ) {
+            Authentication authentication) {
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by(sortBy).descending());
-            Long userId = extractUserId(authentication);
             Page<ReservationResponse> reservations;
-            if (userId != null) {
-                reservations = reservationService.getUserReservations(userId.toString(), pageable);
+
+            if (authentication != null && authentication.isAuthenticated()) {
+                // Auto-provision / sync user, then return only their reservations
+                User user = keycloakUserSyncService.getOrCreateUser(authentication);
+                logger.info("Fetching reservations for user: {} (id={})", user.getEmail(), user.getId());
+                reservations = reservationService.getUserReservations(user.getId().toString(), pageable);
             } else {
-                // For unauthenticated users, return all reservations
+                logger.info("Fetching all reservations for unauthenticated request");
                 reservations = reservationService.getAllReservations(pageable);
             }
+
             return ResponseEntity.ok(reservations.getContent());
         } catch (Exception e) {
-            logger.error("Error fetching user reservations", e);
+            logger.error("Error fetching reservations", e);
             throw e;
         }
     }
 
+    // -------------------------------------------------------------------------
+    // DELETE /api/v1/user/reservations/{reservationId}
+    // -------------------------------------------------------------------------
     @DeleteMapping("/{reservationId}")
-    public ResponseEntity<Void> softDeleteReservation(@PathVariable Long reservationId, Authentication authentication) {
+    public ResponseEntity<Void> softDeleteReservation(
+            @PathVariable Long reservationId,
+            Authentication authentication) {
         try {
-            Long userId = extractUserId(authentication);
-            if (userId != null) {
-                reservationService.deleteUserReservation(reservationId, userId.toString());
+            if (authentication != null && authentication.isAuthenticated()) {
+                User user = keycloakUserSyncService.getOrCreateUser(authentication);
+                logger.info("Deleting reservation {} for user: {}", reservationId, user.getEmail());
+                reservationService.deleteUserReservation(reservationId, user.getId().toString());
             } else {
-                // For unauthenticated users, allow deletion without user validation
+                logger.info("Deleting reservation {} (unauthenticated)", reservationId);
                 reservationService.softDeleteReservation(reservationId);
             }
+
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
-            logger.error("Error deleting reservation with id: {}", reservationId, e);
+            logger.error("Error deleting reservation {}", reservationId, e);
             throw e;
-        }
-    }
-
-    private Long extractUserId(Authentication authentication) {
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null; // Return null for unauthenticated users
-        }
-
-        String username = authentication.getName();
-        if (username == null || username.isEmpty() || "anonymousUser".equals(username)) {
-            return null; // Return null for anonymous users
-        }
-
-        try {
-            return Long.parseLong(username);
-        } catch (NumberFormatException e) {
-            logger.warn("Username is not a numeric ID, looking up by email: {}", username);
-            User user = userRepository.findByEmail(username)
-                    .orElse(null); // Return null if user not found
-            return user != null ? user.getId() : null;
         }
     }
 }

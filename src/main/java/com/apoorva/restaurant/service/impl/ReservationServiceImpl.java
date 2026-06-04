@@ -200,60 +200,58 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public Page<ReservationResponse> getUserReservations(String userId, Pageable pageable) {
-        List<ReservationResponse> allReservations = getAllReservations();
-        List<ReservationResponse> userReservations = allReservations.stream()
-                .filter(r -> {
-                    // Check if reservation belongs to user by matching userId
-                    // Since ReservationResponse doesn't have userId, we need to get it from the repository
-                    Reservation reservation = reservationRepository.findById(r.getId()).orElse(null);
-                    return reservation != null && userId.equals(reservation.getUserId());
-                })
-                .toList();
+        Page<Reservation> reservations = reservationRepository.findByUserIdAndDeletedFalse(userId, pageable);
         
-        int start = (int) pageable.getOffset();
-        List<ReservationResponse> paginatedList = userReservations.stream()
-                .skip(start)
-                .limit(pageable.getPageSize())
-                .collect(Collectors.toList());
-        
-        return new PageImpl<>(paginatedList, pageable, userReservations.size());
+        return reservations.map(r -> {
+            Integer tableNumber = null;
+            if (r.getTableId() != null) {
+                try {
+                    DiningTable table = tableService.getTableById(r.getTableId());
+                    tableNumber = table.getTableNumber();
+                } catch (Exception e) {
+                    // Table not found
+                }
+            }
+            return new ReservationResponse(
+                    r.getId(),
+                    r.getCustomerName(),
+                    r.getPhoneNumber(),
+                    r.getNumberOfGuests(),
+                    r.getReservationDate(),
+                    r.getReservationTime(),
+                    r.getStatus().toString(),
+                    r.getTableId(),
+                    tableNumber,
+                    r.getDurationHours()
+            );
+        });
     }
 
     @Override
     public Page<PublicReservationResponse> getPublicUserReservations(String userId, Pageable pageable) {
-        List<Reservation> allReservations = reservationRepository.findByDeletedFalse();
-        List<PublicReservationResponse> userReservations = allReservations.stream()
-                .filter(r -> userId.equals(r.getUserId()))
-                .map(r -> {
-                    Integer tableNumber = null;
-                    if (r.getTableId() != null) {
-                        try {
-                            DiningTable table = tableService.getTableById(r.getTableId());
-                            tableNumber = table.getTableNumber();
-                        } catch (Exception e) {
-                            // Table not found, skip table number
-                        }
-                    }
-                    return new PublicReservationResponse(
-                            r.getId(),
-                            r.getNumberOfGuests(),
-                            r.getReservationDate(),
-                            r.getReservationTime(),
-                            r.getStatus().toString(),
-                            r.getTableId(),
-                            tableNumber,
-                            r.getDurationHours()
-                    );
-                })
-                .toList();
-
-        int start = (int) pageable.getOffset();
-        List<PublicReservationResponse> paginatedList = userReservations.stream()
-                .skip(start)
-                .limit(pageable.getPageSize())
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(paginatedList, pageable, userReservations.size());
+        Page<Reservation> reservations = reservationRepository.findByUserIdAndDeletedFalse(userId, pageable);
+        
+        return reservations.map(r -> {
+            Integer tableNumber = null;
+            if (r.getTableId() != null) {
+                try {
+                    DiningTable table = tableService.getTableById(r.getTableId());
+                    tableNumber = table.getTableNumber();
+                } catch (Exception e) {
+                    // Table not found
+                }
+            }
+            return new PublicReservationResponse(
+                    r.getId(),
+                    r.getNumberOfGuests(),
+                    r.getReservationDate(),
+                    r.getReservationTime(),
+                    r.getStatus().toString(),
+                    r.getTableId(),
+                    tableNumber,
+                    r.getDurationHours()
+            );
+        });
     }
 
     @Override
